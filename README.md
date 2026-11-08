@@ -3,17 +3,36 @@
 把每一次心情记录变成星球上的一点光。记录心情、点亮记忆星、封存时光胶囊、回看情绪档案。
 
 > 阶段 1–6 已完成：3D 星球场景、心情记录、记忆星、时光胶囊、情绪档案、设置页均已接入。
-> 接手前先读 [`AGENTS.md`](./AGENTS.md)——硬性约束、已知偏差、验收方法和示例数据都在那里。
 
-## 启动
+## 接手第一步
+
+仓库是**私有**的，先在 <https://github.com/settings/invitations> 接受协作邀请，否则 clone 会失败。
+
+环境要求：Node `^20.19.0 || >=22.12.0`（Vite 8.3 的硬性要求），以及 **pnpm**——依赖必须用 `pnpm install` 按仓库根的 `pnpm-lock.yaml` 安装，换 npm/yarn 会绕过锁定解析，构建结果不可比。
 
 ```bash
-pnpm install      # 安装依赖
-pnpm dev          # 开发服务器 → http://localhost:5173
-pnpm build        # 类型检查 + 生产构建 → dist/
-pnpm preview      # 预览生产构建
-pnpm lint         # oxlint 静态检查
+git clone https://github.com/wangsibo0214/moodplanet.git
+cd moodplanet
+pnpm install
+pnpm test     # 必须全绿；当前基线的文件数与用例数以 AGENTS.md 第 5 节为准
+pnpm dev      # → http://localhost:5173
 ```
+
+**接着读 [`AGENTS.md`](./AGENTS.md)**，红线、验收方法、基线读数、已知偏差全在那份文件里，本 README 不复述。
+
+`pnpm dev` 起来后应用是空的，星球上什么都没有——数据只存浏览器本地，属正常，不是 bug。想看有数据的样子：F12 → Console，把 `seed/example-data.js` 整个文件内容粘贴进去回车，页面会自动刷新出 12 条示例记录、8 项装饰全解锁、1 个待开启胶囊。示例数据是虚构的，会覆盖当前浏览器里已有的 `moodplanet:*` 数据。
+
+## 常用命令
+
+| 命令 | 作用 |
+| --- | --- |
+| `pnpm dev` | 开发服务器 → `http://localhost:5173` |
+| `pnpm build` | 类型检查 + 生产构建 → `dist/` |
+| `pnpm preview` | 预览生产构建 |
+| `pnpm lint` | oxlint 静态检查 |
+| `pnpm test` | vitest 单次运行 |
+
+注意 `vite.config.ts` 里 `host: true`，开发服务器除 localhost 外还会监听局域网 IP；在咖啡馆、宿舍等共享网络下开着它，同网段的人能访问到你这个页面。
 
 ## 技术选型
 
@@ -106,16 +125,6 @@ src/
 | `*` | 404 |
 
 使用 History 路由。部署到静态服务器时需要把所有路径重写到 `index.html`，否则直接访问深层链接会 404。
-
-## 起步
-
-clone 之后应用是空的，星球上什么都没有——数据只存本地，属正常现象。想看有数据的样子：
-
-```bash
-pnpm install && pnpm dev
-```
-
-然后打开 `http://localhost:5173`，F12 → Console，把 `seed/example-data.js` 整个文件内容粘进去回车，页面会自动刷新出 12 条示例记录、8 项装饰全解锁、1 个待开启胶囊。示例数据是虚构的，会覆盖当前浏览器里的已有数据。
 
 ## 已知待办
 
