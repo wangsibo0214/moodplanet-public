@@ -1,0 +1,371 @@
+@import '@fontsource-variable/nunito/wght.css';
+@import '@fontsource/quicksand/latin-500.css';
+@import '@fontsource/quicksand/latin-600.css';
+@import '@fontsource/quicksand/latin-700.css';
+@import 'tailwindcss';
+
+/* ==========================================================================
+   MoodPlanet Design System
+   --------------------------------------------------------------------------
+   气质定位：温暖的宇宙，而非冰冷的控制台。
+   - 深色背景但保留紫调暖意，避免纯黑
+   - 玻璃拟态卡片：轻透明 + 内高光 + 柔和投影，不用硬边框
+   - 强调色饱和度克制，作为「情绪色」而非「警告色」使用
+   - 圆角偏大但不夸张，避免幼态
+   ========================================================================== */
+
+@theme {
+  /* ---------------- Typography ---------------- */
+  --font-sans:
+    'Nunito Variable', 'PingFang SC', 'HarmonyOS Sans SC', 'Microsoft YaHei',
+    'Source Han Sans SC', 'Noto Sans CJK SC', system-ui, sans-serif;
+  --font-display:
+    'Quicksand', 'Nunito Variable', 'PingFang SC', 'HarmonyOS Sans SC',
+    'Microsoft YaHei', system-ui, sans-serif;
+
+  /* ---------------- Cosmos · 深蓝紫宇宙背景 ---------------- */
+  --color-cosmos-950: #07081a;
+  --color-cosmos-900: #0b0d21;
+  --color-cosmos-850: #111431;
+  --color-cosmos-800: #171b3d;
+  --color-cosmos-700: #1f2450;
+  --color-cosmos-600: #2b3166;
+
+  /* ---------------- Iris · 柔和蓝紫（主色） ---------------- */
+  --color-iris-50: #f5f2ff;
+  --color-iris-100: #ebe5ff;
+  --color-iris-200: #d8ceff;
+  --color-iris-300: #bfb0fb;
+  --color-iris-400: #a48ff2;
+  --color-iris-500: #8a72e3;
+  --color-iris-600: #7257cb;
+  --color-iris-700: #5c43a6;
+  --color-iris-800: #463279;
+
+  /* ---------------- Astro · 星空蓝（主色） ---------------- */
+  --color-astro-100: #e3f2ff;
+  --color-astro-200: #bfe2ff;
+  --color-astro-300: #96cefb;
+  --color-astro-400: #6fb6f0;
+  --color-astro-500: #4e9bdd;
+  --color-astro-600: #387cb8;
+  --color-astro-700: #2a5f90;
+
+  /* ---------------- Butter · 奶油黄（辅助色） ---------------- */
+  --color-butter-200: #fff0c2;
+  --color-butter-300: #ffe29a;
+  --color-butter-400: #ffd170;
+  --color-butter-500: #f2b84b;
+  --color-butter-600: #ce9633;
+
+  /* ---------------- Blush · 淡粉（辅助色） ---------------- */
+  --color-blush-200: #ffdde7;
+  --color-blush-300: #ffc2d4;
+  --color-blush-400: #ffa3be;
+  --color-blush-500: #f07fa3;
+  --color-blush-600: #cc5f83;
+
+  /* ---------------- Mint · 薄荷绿（辅助色） ---------------- */
+  --color-mint-200: #cdf3e4;
+  --color-mint-300: #a6e9d2;
+  --color-mint-400: #7bd9bc;
+  --color-mint-500: #52c2a2;
+  --color-mint-600: #3a9c81;
+
+  /* ---------------- Ink · 文本 ----------------
+     玻璃面板上（全站最亮的正文底色）也全部通过 WCAG AA（>=4.5:1），
+     纯背景上更高：ink-50 16.5 / ink-100 15.3 / ink-300 9.8 /
+     ink-500 5.4 / ink-700 4.6 */
+  --color-ink-50: #faf9ff;
+  --color-ink-100: #f0effa;
+  --color-ink-300: #c3c1d9;
+  --color-ink-500: #8e8cb0;
+  --color-ink-700: #8684ad;
+
+  /* ---------------- Hairline · 分隔与描边 ---------------- */
+  --color-hairline: rgb(255 255 255 / 0.09);
+  --color-hairline-strong: rgb(255 255 255 / 0.18);
+
+  /* ---------------- Radius · 柔和圆角 ---------------- */
+  --radius-xs: 0.5rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-2xl: 2.25rem;
+  --radius-card: 1.25rem;
+
+  /* ---------------- Shadow · 柔和投影与光晕 ---------------- */
+  --shadow-card:
+    0 1px 2px rgb(6 8 24 / 0.4), 0 12px 32px -12px rgb(6 8 24 / 0.65);
+  --shadow-float:
+    0 2px 6px rgb(6 8 24 / 0.35), 0 24px 48px -20px rgb(6 8 24 / 0.8);
+  --shadow-glow-iris: 0 0 28px -6px rgb(164 143 242 / 0.5);
+  --shadow-glow-astro: 0 0 28px -6px rgb(111 182 240 / 0.45);
+  --shadow-inset-hairline: inset 0 1px 0 rgb(255 255 255 / 0.07);
+
+  /* ---------------- Motion · 柔和反馈 ---------------- */
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-twinkle: twinkle 4.5s var(--ease-soft) infinite;
+  --animate-drift: drift 14s var(--ease-soft) infinite;
+  --animate-meteor: meteor 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-rise: rise 0.5s var(--ease-out-soft) both;
+  --animate-page-in: page-in 0.28s var(--ease-out-soft) both;
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.25;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -10px, 0);
+    }
+  }
+
+  @keyframes meteor {
+    0% {
+      opacity: 0;
+      transform: translate3d(0, 0, 0) rotate(var(--meteor-angle));
+    }
+    2% {
+      opacity: var(--meteor-opacity);
+      transform: translate3d(-2vw, 2vw, 0) rotate(var(--meteor-angle));
+    }
+    12% {
+      opacity: var(--meteor-opacity);
+      transform: translate3d(-11vw, 11vw, 0) rotate(var(--meteor-angle));
+    }
+    20%,
+    100% {
+      opacity: 0;
+      transform: translate3d(var(--meteor-travel-x), var(--meteor-travel-y), 0)
+        rotate(var(--meteor-angle));
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  /* 路由切换：只做一次短位移淡入，不挡操作、不拖节奏 */
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+}
+
+/* ==========================================================================
+   Z-index 阶梯（统一使用这几档，不要临时写 z-[999]）
+   0  背景层 StarfieldBackground
+   10 页面内容
+   20 侧边栏 / 顶栏 / 移动端底栏
+   30 下拉、抽屉、遮罩
+   50 Toast、模态
+   ========================================================================== */
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-cosmos-600) transparent;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background-color: var(--color-cosmos-950);
+    color: var(--color-ink-100);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-50);
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  button,
+  a {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-iris-400) 45%, transparent);
+    color: var(--color-ink-50);
+  }
+
+  /* 键盘可达性：始终可见的焦点环 */
+  :focus-visible {
+    outline: 2px solid var(--color-iris-300);
+    outline-offset: 3px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-cosmos-700);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-cosmos-600);
+    background-clip: content-box;
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+/* 深蓝紫宇宙渐变：作为固定背景层使用 */
+@utility cosmic-bg {
+  background-image:
+    radial-gradient(
+      1100px 760px at 10% -12%,
+      rgb(138 114 227 / 0.3),
+      transparent 62%
+    ),
+    radial-gradient(
+      900px 700px at 92% 4%,
+      rgb(78 155 221 / 0.22),
+      transparent 64%
+    ),
+    radial-gradient(
+      1000px 900px at 46% 112%,
+      rgb(240 127 163 / 0.13),
+      transparent 62%
+    ),
+    linear-gradient(176deg, #0d1027 0%, #0a0c1f 44%, #07081a 100%);
+}
+
+/* 玻璃拟态面板：轻透明 + 内高光 + 柔和投影 */
+@utility glass-panel {
+  background-image: linear-gradient(
+    148deg,
+    rgb(255 255 255 / 0.075),
+    rgb(255 255 255 / 0.026)
+  );
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card), var(--shadow-inset-hairline);
+}
+
+@utility glass-panel-hover {
+  transition:
+    transform 220ms var(--ease-soft),
+    border-color 220ms var(--ease-soft),
+    box-shadow 220ms var(--ease-soft);
+
+  &:hover {
+    border-color: var(--color-hairline-strong);
+    box-shadow: var(--shadow-float), var(--shadow-inset-hairline);
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@utility hairline {
+  border: 1px solid var(--color-hairline);
+}
+
+@utility text-glow {
+  text-shadow: 0 0 26px rgb(164 143 242 / 0.4);
+}
+
+@utility meteor-shower__meteor {
+  position: absolute;
+  width: var(--meteor-length);
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgb(203 220 255 / 0.45), rgb(247 249 255 / 0.9));
+  transform-origin: right center;
+  will-change: transform, opacity;
+
+  &::after {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--color-ink-50);
+    content: '';
+    transform: translateY(-50%);
+  }
+}
+
+/* 进入动画：配合 prefers-reduced-motion 在 base 中已全局降级 */
+@utility stagger-rise {
+  animation: var(--animate-rise);
+}
+
+/* 路由切换进入动画：由 AppLayout 按路由 key 触发，降低动效时不挂这个类 */
+@utility page-enter {
+  animation: var(--animate-page-in);
+}
+
+/* 尊重用户的动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

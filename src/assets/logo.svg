@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="mp-core" x1="7" y1="6" x2="25" y2="26" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A48FF2" />
+      <stop offset="1" stop-color="#4E9BDD" />
+    </linearGradient>
+  </defs>
+  <ellipse
+    cx="16"
+    cy="16"
+    rx="14.6"
+    ry="5.2"
+    transform="rotate(-22 16 16)"
+    stroke="#BFB0FB"
+    stroke-opacity="0.5"
+    stroke-width="1.5"
+  />
+  <circle cx="16" cy="16" r="8.6" fill="url(#mp-core)" />
+  <circle cx="12.9" cy="12.8" r="2.5" fill="#FFFFFF" fill-opacity="0.4" />
+  <circle cx="25.4" cy="7.2" r="1.5" fill="#FFD170" fill-opacity="0.85" />
+</svg>
