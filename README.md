@@ -2,7 +2,8 @@
 
 把每一次心情记录变成星球上的一点光。记录心情、点亮记忆星、封存时光胶囊、回看情绪档案。
 
-> 当前为**第一阶段：项目初始化与基础架构**。页面结构、设计系统与导航已就位，具体业务逻辑与 3D 星球场景留待后续阶段。
+> 阶段 1–6 已完成：3D 星球场景、心情记录、记忆星、时光胶囊、情绪档案、设置页均已接入。
+> 接手前先读 [`AGENTS.md`](./AGENTS.md)——硬性约束、已知偏差、验收方法和示例数据都在那里。
 
 ## 启动
 
@@ -25,7 +26,7 @@ pnpm lint         # oxlint 静态检查
 | 路由 | react-router 7 | `BrowserRouter` + 嵌套布局路由 + `lazy` |
 | 状态 | zustand 5 | `persist` 中间件落 localStorage，key 前缀 `moodplanet:` |
 | 图标 | lucide-react | 全站唯一图标集，不使用 emoji 代替图标 |
-| 3D | three 0.187 + @react-three/fiber 9 + drei 10 | 已安装，第一阶段尚未接入 |
+| 3D | three 0.187 + @react-three/fiber 9 + drei 10 | `src/features/planet/scene/`，构建时单独拆 chunk |
 | 字体 | Quicksand（标题）+ Nunito Variable（正文） | 本地 `@fontsource` 自托管，中文回退系统字体 |
 | Lint | oxlint | 含 React Compiler 规则 |
 
@@ -106,9 +107,18 @@ src/
 
 使用 History 路由。部署到静态服务器时需要把所有路径重写到 `index.html`，否则直接访问深层链接会 404。
 
-## 下一阶段待接入
+## 起步
 
-- `@react-three/fiber` 3D 星球场景，替换 `PlanetHero` 中占位的 CSS 球体（容器尺寸已固定，可直接替换）
-- 心情记录的表单、强度选择与保存
-- 记忆星点亮流程、时光胶囊封存与到期解锁
-- 情绪档案的图表与统计
+clone 之后应用是空的，星球上什么都没有——数据只存本地，属正常现象。想看有数据的样子：
+
+```bash
+pnpm install && pnpm dev
+```
+
+然后打开 `http://localhost:5173`，F12 → Console，把 `seed/example-data.js` 整个文件内容粘进去回车，页面会自动刷新出 12 条示例记录、8 项装饰全解锁、1 个待开启胶囊。示例数据是虚构的，会覆盖当前浏览器里的已有数据。
+
+## 已知待办
+
+- `PlanetSnapshot.tsx` 主页「待开启胶囊」格写死为 `0` / 「时光胶囊还没启用」，未接胶囊 store（胶囊页本身正常）。
+
+上面「目录结构」是早期草图，只列了当时的文件；现在 `features/` 下每个域、`services/` 四个仓储、`stores/` 四个 store 都已展开，以仓库实际文件为准。
