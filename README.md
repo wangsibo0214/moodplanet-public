@@ -20,6 +20,10 @@ pnpm dev      # → http://localhost:5173
 
 **接着读 [`AGENTS.md`](./AGENTS.md)**，红线、验收方法、基线读数、已知偏差全在那份文件里，本 README 不复述。
 
+两人协作：**不要直推 master**。开 `feat/<卡片名>` 分支 → 自跑验收 → 推分支开 PR → 对方 approve → @wangsibo0214 用 Squash and merge 合入。完整流程见 `AGENTS.md` 第 9.1 节（Free 计划的私有库没有服务端分支保护，这条纯靠自觉）。
+
+**2026-11-09 ~ 11-15 这一周走特殊安排**：原开发者不参与，`master` 冻结，@ZSQ114coder 在 `week1` 集成分支上自主推进、自己 approve 合入 `week1`，周末再开 `week1 → master` 总 PR。详见 `AGENTS.md` 第 9.3 节，含本周放开的两条红线与继续死守的清单。
+
 `pnpm dev` 起来后应用是空的，星球上什么都没有——数据只存浏览器本地，属正常，不是 bug。想看有数据的样子：F12 → Console，把 `seed/example-data.js` 整个文件内容粘贴进去回车，页面会自动刷新出 12 条示例记录、8 项装饰全解锁、1 个待开启胶囊。示例数据是虚构的，会覆盖当前浏览器里已有的 `moodplanet:*` 数据。
 
 ## 常用命令

@@ -77,7 +77,82 @@ pnpm lint    # 0 warnings 0 errors
 
 ## 9. 协作规矩
 
+### 9.1 Git 流程
+
+仓库是 Free 计划下的私有库，GitHub 不给分支保护 / rulesets（API 返回 403），所以下面这套**没有任何服务端强制，纯靠自觉**。谁直推了 master 都拦不住，只能事后回滚。
+
+- **master 只进 PR**。任何人不得直推 master，不得 force push，不得删 master。
+- 开工前先 `git checkout master && git pull`，再开分支：`git switch -c feat/<卡片名>`（修 bug 用 `fix/<卡片名>`）。一张卡一个分支，不要在 master 上写代码。
+- 卡片做完、自跑验收（`pnpm test` / `pnpm lint` / `pnpm build` 全绿）后再推：`git push -u origin feat/<卡片名>`，然后在 GitHub 开 PR，base 选 `master`。
+- PR 描述写三件事：这张卡做了什么、验收命令的**真实读数**、偏差清单（对照第 6 节的格式）。
+- **至少 1 个 approve 才能合，自己不能 approve 自己的 PR**。合并由原开发者 @wangsibo0214 点，作者不要自己合。
+- 合并方式统一 **Squash and merge**：一张卡在 master 上只留一个提交，合完删源分支。
+- 分支落后了就 `git fetch origin && git rebase origin/master`，冲突在自己分支上解完再推；不要在 master 上解冲突。
+- 推之前确认没带上真实日记、导出 JSON、密钥、`node_modules`、`dist`（见 `.gitignore`）。示例数据只有 `seed/example-data.js` 那一份是脱敏的。
+
+### 9.2 卡片与验收
+
 - 改动按**任务卡**推进，一张卡做完、自跑验收、逐条报偏差，再进下一张。不要顺手把相邻功能一起改了。
 - **不要删改既有测试**。要加就追加；若认为某个既有测试的断言本身错了，先报出来等确认，不要自己改绿。
 - 原开发者会在卡片之间自己改代码（例如把呼吸逻辑抽成 `lib/breath.ts` 并补测试）。遇到「这文件怎么和我预期不一样」，先看 `git log`，不要直接覆盖。
 - 手机端看起来比桌面「糊」是第二阶段刻意的性能取舍（地形 detail 9 vs 13、植被 reduced 约 1.1k vs 约 4.6k 三角、fov 48 vs 42），渲染分辨率两端都没降（dpr `[1,2]`、antialias、阴影 percentage 一致）。要不要拉高，是产品决定，不是 bug。
+
+### 9.3 本周临时安排（2026-11-09 ~ 2026-11-15）
+
+原开发者本周不参与，仓库交给 @ZSQ114coder 自主推进：自己提想法、自己拆卡、自己验收。**本节在这段时间内覆盖 9.1 的审批条款和第 2 节的两条红线**，其余条款照常生效。11-15 之后本节失效，恢复 9.1 与第 2 节原文。
+
+#### 分支模型
+
+| 分支 | 本周谁能写 | 用途 |
+| --- | --- | --- |
+| `master` | **冻结，谁都不写** | 原开发者验收过的基线，周末回来时的对照物 |
+| `week1` | ZSQ114coder | 本周集成分支，他的 PR 全部合到这里 |
+| `feat/<想法名>` | ZSQ114coder | 一个想法一条，从 `week1` 开出来 |
+
+接受邀请、clone、`pnpm install`、`pnpm test` 确认既有 129 个用例全绿之后，第一步是建集成分支：
+
+```bash
+git switch -c week1 master
+git push -u origin week1
+```
+
+之后每个想法：
+
+```bash
+git checkout week1 && git pull
+git switch -c feat/<想法名>
+# 做完，自跑下面「每个 PR 必须带」的验收
+git push -u origin feat/<想法名>
+# 开 PR 时 base 选 week1，不是 master
+```
+
+本周**允许他自己 approve 并 squash 合入 `week1`**——原开发者不在，这是 9.1「自己不能 approve 自己的 PR」的唯一例外。合完删源分支。
+
+周末他把 `week1 → master` 开一个总 PR，列出本周所有卡片、累计偏差和最终读数，原开发者审完 squash 合，本周工作才算落地。
+
+#### 本周放开的两条红线（第 2 节）
+
+1. **运行期依赖可以加**。每个新增在 PR 里单列一节：加了什么 / 为什么非它不可 / `pnpm build` 前后体积对照。必须用 pnpm，`pnpm-lock.yaml` 一起提交。
+2. **持久化字段可以扩**。四个键名 `moodplanet:records` / `:planet` / `:capsules` / `:settings` 不许改；新字段必须可选且有默认值，旧数据能正常 hydrate；PR 里写新旧结构对照，并**追加测试覆盖「旧数据 + 新代码」**。第 4 节的重建语义不能被破坏：records 从旧到新且加载不排序、stars 与 environment 按 records 重建、`totalSaved` 取 `max(存值, 记录数)`、`unlocks` 由 `evaluateUnlocks` 重算、capsules 的 `status` 按 `unlockAt` 与当前时钟重算。
+
+#### 继续死守的（破一条周末就退回）
+
+- 零网络请求、零遥测。
+- `reduceMotion` 开启时一律不排期任何新动作。
+- 门控为 0 时其余表现逐位不变。
+- 小人物挂点在星球顶部正中、正脸朝用户，不挪动、不被植被遮挡；气泡不与 HUD 文字相交（第 3 节）。
+- **不删改既有测试**，既有 129 个用例必须继续全绿，新用例往上加。认为某个既有断言本身错了，写进 PR 等原开发者周末定夺，不要自己改绿。
+- 卡片自相矛盾时取无障碍上限那个读法，并写明取舍。
+- 真实日记 / 导出 JSON / 密钥不进仓库；`seed/example-data.js` 保持脱敏，不许换成真实内容。
+
+#### 每个 PR 必须带
+
+- 一句话说明这个想法做了什么。
+- **真实读数**：`pnpm test`（文件数 / 用例数）、`pnpm lint`、`pnpm build`（three / r3f / index 的 raw + gzip，对照第 5 节基线）。没跑就不要写「应该没问题」。
+- 偏差清单：额外改动、没做到的、取舍理由，往第 6 节追加。
+- 动了依赖或数据结构就单列一节。
+- 七条路由 + 390 / 320 两个宽度各跑一遍，零 console 错误（第 7 节）。隐藏标签页只能拿到结构层证据，不能当交互验收依据。
+
+第 6 节第 3 条（`PlanetSnapshot.tsx` 写死「待开启胶囊」）本周可以自行修，修完在 PR 里说明，并把该条从已知偏差里移除。
+
+验证数据落盘时别污染自己的浏览器：seed 会覆盖当前 origin 下全部 `moodplanet:*`。要试 seed 就另起端口（`pnpm dev --port 5199`）或用无痕窗口，别在存了自己真实记录的窗口里跑。
