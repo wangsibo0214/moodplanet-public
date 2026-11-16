@@ -105,11 +105,23 @@ export function RecordForm({
                 取消
               </Button>
             ) : null}
-            <Button variant="secondary" size="md" disabled={!mood} onClick={() => submit(false)}>
+            <Button
+              variant="secondary"
+              size="md"
+              disabled={!mood}
+              data-sound="none"
+              onClick={() => submit(false)}
+            >
               <NotebookPen className="size-4" strokeWidth={1.9} aria-hidden />
               {mode === 'edit' && initialAnalyzed ? '只保存，不保留解读' : '只保存'}
             </Button>
-            <Button variant="primary" size="md" disabled={!mood} onClick={() => submit(true)}>
+            <Button
+              variant="primary"
+              size="md"
+              disabled={!mood}
+              data-sound="none"
+              onClick={() => submit(true)}
+            >
               <Sparkles className="size-4" strokeWidth={1.9} aria-hidden />
               {mode === 'edit' ? '保存修改并解读' : '保存并生成解读'}
             </Button>

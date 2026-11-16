@@ -2,6 +2,8 @@ import { create } from 'zustand'
 
 import { analyzeMood, neutralAnalysis } from '@/services/moodAnalysis'
 import { localRecordRepository } from '@/services/recordRepository'
+import { sound } from '@/features/sound/soundManager'
+import type { SoundName } from '@/features/sound/lib/synth'
 import { usePlanetStore } from '@/stores/usePlanetStore'
 import type { MoodKey, MoodRecord, TagKey } from '@/types/mood'
 import { createId } from '@/utils/id'
@@ -58,11 +60,13 @@ function buildRecord(
 const SAVE_ERROR = '写入本地存储失败了，记录还在页面上，但刷新后可能会丢失。'
 
 export const useMoodStore = create<MoodState>()((set, get) => {
-  /** 界面先拿到新状态，落盘在后台进行；失败时只补一条提示，不回滚。 */
-  const commit = (records: MoodRecord[]) => {
+  /** 界面先拿到新状态，落盘在后台进行；失败时只补一条提示，不回滚。
+      cue 只在落盘成功后响：失败绝不播成功音。 */
+  const commit = (records: MoodRecord[], cue?: SoundName) => {
     set({ records })
     void localRecordRepository.save(records).then((ok) => {
       set({ saveError: ok ? null : SAVE_ERROR })
+      if (ok && cue) sound.play(cue)
     })
   }
 
@@ -85,7 +89,7 @@ export const useMoodStore = create<MoodState>()((set, get) => {
       const now = new Date().toISOString()
       const record = buildRecord(createId('rec'), draft, now, now)
       const next = [...get().records, record]
-      commit(next)
+      commit(next, 'success')
       usePlanetStore.getState().recordCreated(record, next)
       return record
     },
@@ -95,7 +99,7 @@ export const useMoodStore = create<MoodState>()((set, get) => {
       if (!existing) return null
       const next = buildRecord(id, draft, existing.createdAt, new Date().toISOString())
       const nextRecords = get().records.map((item) => (item.id === id ? next : item))
-      commit(nextRecords)
+      commit(nextRecords, 'success')
       usePlanetStore.getState().recordUpdated(next, nextRecords)
       return next
     },

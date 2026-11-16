@@ -70,6 +70,8 @@ export interface MemoryStar {
   title: string
   /** ISO 8601，星被点亮的时刻，等于记录的 createdAt */
   createdAt: string
+  /** 视觉大小百分比（50–150，默认 100）；等级由它实时算出，不另存 */
+  size: number
 }
 
 /** 星球当前的环境状态：由最近一个有记录的日子综合得出（最多的心情胜出，并列取较晚），存盘以便刷新后保持。 */
@@ -93,10 +95,20 @@ export interface PlanetGrowth {
 }
 
 /**
- * 点击伙伴时可能播放的动作。
- * hop 是对点击的直接回应，永远可能；其余各由一个解锁项放行。
+ * 伙伴能播放的动作。
+ * hop 是对点击的直接回应，永远可能；twirl / wave / glowPulse / roll 各由一个解锁项放行，
+ * 只会出现在点击的随机池里；sit / sleep / dance / heart 由环绕动作菜单显式触发，不进随机池。
  */
-export type CompanionActionKind = 'hop' | 'twirl' | 'wave' | 'glowPulse' | 'roll'
+export type CompanionActionKind =
+  | 'hop'
+  | 'twirl'
+  | 'wave'
+  | 'glowPulse'
+  | 'roll'
+  | 'sit'
+  | 'sleep'
+  | 'dance'
+  | 'heart'
 
 /** 一次伙伴动作：seq 变化即重放，即便连续两次抽到同一种动作 */
 export interface CompanionAction {

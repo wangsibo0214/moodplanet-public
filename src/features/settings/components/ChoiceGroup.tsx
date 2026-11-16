@@ -39,6 +39,7 @@ export function ChoiceGroup<T extends string>({
             type="button"
             role="radio"
             aria-checked={selected}
+            data-sound="none"
             onClick={() => onChange(option.value)}
             className={cn(
               'h-10 min-w-14 rounded-sm px-3 text-sm font-medium',

@@ -369,3 +369,56 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* 音量滑块：轨道填充走 iris→butter 渐变，拇指与焦点环沿用星球配色 */
+.sound-slider {
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-iris-400) 0%,
+    var(--color-butter-300) var(--sound-fill, 60%),
+    rgb(255 255 255 / 0.12) var(--sound-fill, 60%)
+  );
+  cursor: pointer;
+}
+
+.sound-slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sound-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-ink-50);
+  border: 2px solid var(--color-iris-400);
+  box-shadow: var(--shadow-glow-iris);
+  transition: transform 200ms var(--ease-soft);
+}
+
+.sound-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+.sound-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-ink-50);
+  border: 2px solid var(--color-iris-400);
+  box-shadow: var(--shadow-glow-iris);
+  transition: transform 200ms var(--ease-soft);
+}
+
+.sound-slider::-moz-range-thumb:hover {
+  transform: scale(1.12);
+}
+
+.sound-slider:focus-visible {
+  outline: 2px solid var(--color-iris-300);
+  outline-offset: 4px;
+}

@@ -7,6 +7,7 @@ import {
   Settings,
   ShieldCheck,
   Trash2,
+  Volume2,
   X,
 } from 'lucide-react'
 
@@ -15,6 +16,8 @@ import { ChoiceGroup } from '@/features/settings/components/ChoiceGroup'
 import { SettingsRow } from '@/features/settings/components/SettingsRow'
 import { SettingsSection } from '@/features/settings/components/SettingsSection'
 import { Toggle } from '@/features/settings/components/Toggle'
+import { VolumeSlider } from '@/features/settings/components/VolumeSlider'
+import { sound } from '@/features/sound/soundManager'
 import { useDocumentTitle } from '@/hooks'
 import { clearAllData, downloadExport } from '@/services/dataTransfer'
 import { useSettingsStore, type StarDensity } from '@/stores/useSettingsStore'
@@ -74,6 +77,10 @@ export default function SettingsPage() {
   const setReduceMotion = useSettingsStore((s) => s.setReduceMotion)
   const setMeteorShower = useSettingsStore((s) => s.setMeteorShower)
   const setStarDensity = useSettingsStore((s) => s.setStarDensity)
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled)
+  const soundVolume = useSettingsStore((s) => s.soundVolume)
+  const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled)
+  const setSoundVolume = useSettingsStore((s) => s.setSoundVolume)
 
   const [notice, setNotice] = useState<string | null>(null)
   const [confirmingClear, setConfirmingClear] = useState(false)
@@ -151,6 +158,50 @@ export default function SettingsPage() {
               options={DENSITY_OPTIONS}
               onChange={setStarDensity}
             />
+          }
+        />
+      </SettingsSection>
+
+      <SettingsSection
+        title="声音"
+        description="交互音效由本机实时合成：不加载音频文件，也不联网。"
+      >
+        <SettingsRow
+          label="交互音效"
+          description="按钮、伙伴互动、记录与胶囊的轻柔反馈音。关闭后立即静音，包括正在播放的声音。"
+          control={
+            <Toggle
+              label="交互音效"
+              checked={soundEnabled}
+              onChange={setSoundEnabled}
+            />
+          }
+        />
+        <SettingsRow
+          label="音量"
+          description="默认 60%，拖动立即生效。"
+          control={
+            <VolumeSlider
+              value={soundVolume}
+              disabled={!soundEnabled}
+              onChange={setSoundVolume}
+            />
+          }
+        />
+        <SettingsRow
+          label="试听"
+          description="一段由轻到亮的三音小样：气泡、风铃、星铃。"
+          control={
+            <Button
+              variant="secondary"
+              size="sm"
+              data-sound="none"
+              disabled={!soundEnabled}
+              onClick={() => sound.preview()}
+            >
+              <Volume2 className="size-4" strokeWidth={1.75} aria-hidden />
+              试听音效
+            </Button>
           }
         />
       </SettingsSection>

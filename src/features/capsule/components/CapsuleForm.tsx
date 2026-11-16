@@ -112,7 +112,7 @@ export function CapsuleForm({ now, onSealed }: CapsuleFormProps) {
         </p>
       ) : null}
 
-      <Button block onClick={submit}>
+      <Button block data-sound="none" onClick={submit}>
         <Lock className="size-4" strokeWidth={1.9} aria-hidden />
         封存胶囊
       </Button>

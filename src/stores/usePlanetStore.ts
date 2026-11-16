@@ -3,6 +3,8 @@ import { create } from 'zustand'
 import { MOOD_MAP } from '@/features/mood/mood.config'
 import { synthesizeLatestDay } from '@/features/planet/dayMood'
 import { actionPool, evaluateUnlocks } from '@/features/planet/growth.config'
+import { STAR_SIZE_DEFAULT, clampStarSize } from '@/features/planet/lib/starSize'
+import { scatterOrbit } from '@/features/planet/lib/starLayout'
 import {
   DEFAULT_ENVIRONMENT,
   DEFAULT_GROWTH,
@@ -11,6 +13,7 @@ import {
 } from '@/services/planetRepository'
 import type {
   CompanionAction,
+  CompanionActionKind,
   MemoryStar,
   MoodRecord,
   PlanetEnvironment,
@@ -46,14 +49,26 @@ interface PlanetState {
   /* ---------- 只活在当前会话的界面状态 ---------- */
   /** 当前打开的记忆星对应哪条记录，null 表示面板隐藏 */
   selectedRecordId: string | null
+  /** 当前打开大小调整面板的记忆星 id，null 表示面板隐藏 */
+  sizedStarId: string | null
   companionLine: string | null
   companionAction: CompanionAction | null
+  /** 伙伴环绕动作菜单是否展开（右键 / 长按伙伴打开） */
+  companionMenuOpen: boolean
 
   hydrate: (records: readonly MoodRecord[]) => Promise<void>
   openStar: (recordId: string | null) => void
+  /** 打开某颗星的大小调整面板；传 null 关闭。与详情面板、伙伴菜单互斥 */
+  openStarSize: (starId: string | null) => void
+  /** 只改这一颗星的大小并落盘，其余星与原始记录都不动 */
+  setStarSize: (starId: string, size: number) => void
   pokeCompanion: () => void
   dismissCompanion: () => void
   dismissErrors: () => void
+  openCompanionMenu: () => void
+  closeCompanionMenu: () => void
+  /** 菜单里选定一个动作：播放它并顺手收起菜单 */
+  performCompanionAction: (kind: CompanionActionKind) => void
 
   /* ---------- 由 useMoodStore 在记录生命周期里调用 ---------- */
   recordCreated: (record: MoodRecord, records: readonly MoodRecord[]) => void
@@ -70,26 +85,19 @@ type CommitPatch = Partial<
     | 'growth'
     | 'environment'
     | 'selectedRecordId'
+    | 'sizedStarId'
     | 'companionLine'
     | 'companionAction'
+    | 'companionMenuOpen'
   >
 >
 
-const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
-
 /**
- * 由记录 id 推出一个固定的轨道位。
+ * 由记录 id 推出一个固定的散点位。
  * 用哈希而不是数组下标，是因为下标会随删除而变化，星就会在刷新后跳到别处。
  */
 function orbitFor(recordId: string): StarOrbit {
-  const seed = hashSeed(recordId)
-  return {
-    /* 半径夹在地表（约 1.3）与默认视锥半高之间，太远的星会转出画布点不到 */
-    radius: 1.36 + (seed % 4) * 0.1,
-    phase: (seed * GOLDEN_ANGLE) % (Math.PI * 2),
-    tiltX: Math.sin(seed * 12.9898) * 0.42,
-    tiltZ: Math.cos(seed * 78.233) * 0.42,
-  }
+  return scatterOrbit(hashSeed(recordId))
 }
 
 /** 星上显示的一行摘要：优先取正文开头，其次取解读主题，都没有就用情绪名兜底。 */
@@ -108,6 +116,7 @@ function makeStar(record: MoodRecord): MemoryStar {
     orbit: orbitFor(record.id),
     title: starTitle(record),
     createdAt: record.createdAt,
+    size: STAR_SIZE_DEFAULT,
   }
 }
 
@@ -158,18 +167,23 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
     saveError: null,
 
     selectedRecordId: null,
+    sizedStarId: null,
     companionLine: null,
     companionAction: null,
+    companionMenuOpen: false,
 
     hydrate: async (records) => {
       if (get().status !== 'idle') return
       set({ status: 'loading' })
       const { data, error } = await localPlanetRepository.load()
 
-      /* 记忆星始终按记录重建：存过的轨道位复用，缺的补上，指向已删记录的自动消失。
-         这样星与记录不可能脱钩，也顺手把第三阶段之前留下的记录补成了星。 */
+      /* 记忆星始终按记录重建：星的 id 与大小复用存值，指向已删记录的自动消失。
+         轨道位一律按记录哈希重算：旧版窄球带排布会围成星环，存过的旧轨道位不再复用。 */
       const stored = new Map(data.stars.map((star) => [star.recordId, star]))
-      const stars = records.map((record) => stored.get(record.id) ?? makeStar(record))
+      const stars = records.map((record) => {
+        const prev = stored.get(record.id)
+        return prev ? { ...prev, orbit: orbitFor(record.id) } : makeStar(record)
+      })
       const orphaned = data.stars.length - stars.filter((star) => stored.has(star.recordId)).length
 
       /* 迁移期计数兜底：老数据里 totalSaved 可能落后于实际记录数，只往上抬不往下压 */
@@ -208,7 +222,29 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
         return
       }
       /* 打开一颗星也算一次主动互动，成长不止来自写记录 */
-      commit({ selectedRecordId: recordId, growth: withInteraction(get().growth) })
+      commit({
+        selectedRecordId: recordId,
+        sizedStarId: null,
+        companionMenuOpen: false,
+        growth: withInteraction(get().growth),
+      })
+    },
+
+    openStarSize: (starId) => {
+      if (starId === null) {
+        set({ sizedStarId: null })
+        return
+      }
+      /* 三个浮动面板互斥：开大小面板就收起详情与伙伴菜单 */
+      set({ sizedStarId: starId, selectedRecordId: null, companionMenuOpen: false })
+    },
+
+    setStarSize: (starId, size) => {
+      const next = clampStarSize(size)
+      const stars = get().stars
+      const target = stars.find((star) => star.id === starId)
+      if (!target || target.size === next) return
+      commit({ stars: stars.map((star) => (star.id === starId ? { ...star, size: next } : star)) })
     },
 
     pokeCompanion: () => {
@@ -228,6 +264,26 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
 
     dismissCompanion: () => set({ companionLine: null }),
     dismissErrors: () => set({ loadError: null, saveError: null }),
+
+    /* 重复右键只维持打开，不重播展开动画；关闭走同一个 set，天然幂等 */
+    openCompanionMenu: () => {
+      if (!get().companionMenuOpen)
+        set({ companionMenuOpen: true, selectedRecordId: null, sizedStarId: null })
+    },
+    closeCompanionMenu: () => {
+      if (get().companionMenuOpen) set({ companionMenuOpen: false })
+    },
+
+    performCompanionAction: (kind) => {
+      const state = get()
+      /* 菜单里点一个动作和戳一下同价：都算一次主动互动，解锁进度照常走 */
+      const growth = withInteraction(state.growth)
+      set({ companionMenuOpen: false })
+      commit({
+        growth,
+        companionAction: { kind, seq: (state.companionAction?.seq ?? 0) + 1 },
+      })
+    },
 
     recordCreated: (record, records) => {
       const state = get()
@@ -263,6 +319,7 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
 
     recordDeleted: (recordId, remaining) => {
       const state = get()
+      const removed = state.stars.find((star) => star.recordId === recordId)
       const environment = environmentFrom(remaining, new Date().toISOString())
       const envChanged =
         environment.mood !== state.environment.mood ||
@@ -273,6 +330,7 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
         ...(envChanged ? { environment } : {}),
         selectedRecordId:
           state.selectedRecordId === recordId ? null : state.selectedRecordId,
+        sizedStarId: state.sizedStarId === removed?.id ? null : state.sizedStarId,
       })
     },
 
@@ -285,8 +343,10 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
         loadError: null,
         saveError: null,
         selectedRecordId: null,
+        sizedStarId: null,
         companionLine: null,
         companionAction: null,
+        companionMenuOpen: false,
       }),
   }
 })

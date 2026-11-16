@@ -17,6 +17,7 @@ export function Toggle({ checked, onChange, label, disabled = false }: TogglePro
       aria-checked={checked}
       aria-label={label}
       disabled={disabled}
+      data-sound="none"
       onClick={() => onChange(!checked)}
       className={cn(
         'grid h-11 w-14 place-items-center rounded-full',

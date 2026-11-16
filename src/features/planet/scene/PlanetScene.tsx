@@ -15,6 +15,7 @@ import { EnvironmentLights } from './EnvironmentLights'
 import { MemoryStars } from './MemoryStars'
 import { PlanetBody } from './PlanetBody'
 import { SpaceParticles } from './SpaceParticles'
+import { StarPanelTracker } from './StarPanelTracker'
 import { Vegetation, type VegetationQuality } from './Vegetation'
 import {
   advanceEnvironment,
@@ -214,6 +215,8 @@ export function PlanetScene({ calm, quality, detail }: PlanetSceneProps) {
         {/* 云层、记忆星、辉光不跟星球一起转：它们属于环境，跟着转会让人以为是在拖天空 */}
         <CloudLayer env={env} calm={calm} />
         <MemoryStars env={env} calm={calm} />
+        {/* 挂在记忆星之后：同一帧里先更新星的位置，再投影写弹窗，不另开动画循环 */}
+        <StarPanelTracker />
         <AtmosphereGlow env={env} />
       </IntroRig>
 

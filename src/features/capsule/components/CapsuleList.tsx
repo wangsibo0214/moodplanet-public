@@ -127,7 +127,12 @@ export function CapsuleList({ capsules, now, calm, onOpen, onDelete }: CapsuleLi
             {status === 'ready' ? (
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <p className="text-sm text-butter-300">它等到了今天，准备好再打开。</p>
-                <Button size="sm" onClick={() => handleOpen(capsule.id)} aria-label={`开启胶囊 ${capsule.title}`}>
+                <Button
+                  size="sm"
+                  data-sound="none"
+                  onClick={() => handleOpen(capsule.id)}
+                  aria-label={`开启胶囊 ${capsule.title}`}
+                >
                   <Unlock className="size-4" strokeWidth={1.9} aria-hidden />
                   开启胶囊
                 </Button>

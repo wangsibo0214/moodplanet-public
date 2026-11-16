@@ -1,5 +1,6 @@
 import { MOOD_MAP } from '@/features/mood/mood.config'
 import { evaluateUnlocks, UNLOCK_MAP } from '@/features/planet/growth.config'
+import { clampStarSize } from '@/features/planet/lib/starSize'
 import { STORAGE_PREFIX } from '@/services/storage'
 import type { MemoryStar, MoodKey, PlanetEnvironment, PlanetGrowth, StarOrbit } from '@/types/mood'
 
@@ -88,6 +89,7 @@ function coerceStar(value: unknown): MemoryStar | null {
     orbit: coerceOrbit(raw.orbit),
     title: isString(raw.title) ? raw.title : '',
     createdAt: isString(raw.createdAt) ? raw.createdAt : '',
+    size: clampStarSize(raw.size),
   }
 }
 

@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 
 import { capsuleStatus } from '@/features/capsule/capsuleTime'
+import { sound } from '@/features/sound/soundManager'
+import type { SoundName } from '@/features/sound/lib/synth'
 import { localCapsuleRepository } from '@/services/capsuleRepository'
 import type { TimeCapsule } from '@/types/capsule'
 import { createId } from '@/utils/id'
@@ -37,11 +39,13 @@ function refresh(capsules: TimeCapsule[], now: Date): TimeCapsule[] {
 }
 
 export const useCapsuleStore = create<CapsuleState>()((set, get) => {
-  /** 界面先拿到新状态，落盘在后台进行；失败时只补一条提示，不回滚。 */
-  const commit = (capsules: TimeCapsule[]) => {
+  /** 界面先拿到新状态，落盘在后台进行；失败时只补一条提示，不回滚。
+      cue 只在落盘成功后响：失败绝不播成功音。 */
+  const commit = (capsules: TimeCapsule[], cue?: SoundName) => {
     set({ capsules })
     void localCapsuleRepository.save(capsules).then((ok) => {
       set({ saveError: ok ? null : SAVE_ERROR })
+      if (ok && cue) sound.play(cue)
     })
   }
 
@@ -69,7 +73,7 @@ export const useCapsuleStore = create<CapsuleState>()((set, get) => {
         status: 'sealed',
         openedAt: null,
       }
-      commit([...get().capsules, refresh([capsule], now)[0]])
+      commit([...get().capsules, refresh([capsule], now)[0]], 'sparkle')
       return capsule
     },
 
@@ -78,7 +82,10 @@ export const useCapsuleStore = create<CapsuleState>()((set, get) => {
       const target = get().capsules.find((item) => item.id === id)
       if (!target || capsuleStatus(target, now) !== 'ready') return false
       const opened: TimeCapsule = { ...target, openedAt: now.toISOString(), status: 'opened' }
-      commit(get().capsules.map((item) => (item.id === id ? opened : item)))
+      commit(
+        get().capsules.map((item) => (item.id === id ? opened : item)),
+        'bell',
+      )
       return true
     },
 

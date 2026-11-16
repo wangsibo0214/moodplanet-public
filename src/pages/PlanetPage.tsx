@@ -4,7 +4,9 @@ import { AlertTriangle, X } from 'lucide-react'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui'
 import { MOOD_MAP } from '@/features/mood/mood.config'
 import { CompanionBubble } from '@/features/planet/components/CompanionBubble'
+import { CompanionRadialMenu } from '@/features/planet/components/CompanionRadialMenu'
 import { MemoryStarPanel } from '@/features/planet/components/MemoryStarPanel'
+import { MemoryStarSizePanel } from '@/features/planet/components/MemoryStarSizePanel'
 import { PlanetGrowthPanel } from '@/features/planet/components/PlanetGrowthPanel'
 import { PlanetGreeting, PlanetHud } from '@/features/planet/components/PlanetHud'
 import { PlanetSnapshot } from '@/features/planet/components/PlanetSnapshot'
@@ -65,6 +67,8 @@ export default function PlanetPage() {
         <PlanetHud />
         <CompanionBubble />
         <MemoryStarPanel />
+        <MemoryStarSizePanel />
+        <CompanionRadialMenu />
       </section>
 
       {loadError || saveError ? (
@@ -93,7 +97,8 @@ export default function PlanetPage() {
       ) : null}
 
       <p className="-mt-2 text-center text-xs text-ink-700 lg:-mt-5">
-        拖动旋转星球 · 双指或滚轮缩放 · 点一下星球上的伙伴 · 点一下轨道上的记忆星
+        拖动旋转星球 · 双指或滚轮缩放 · 点一下星球上的伙伴 · 右键或长按伙伴打开动作菜单 ·
+        左键记忆星查看记忆 · 右键或长按记忆星调整大小
       </p>
 
       <QuickEntries />
