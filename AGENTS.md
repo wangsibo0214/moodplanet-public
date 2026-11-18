@@ -42,12 +42,14 @@ clone 后什么都不做的话应用是空的，这属正常，不是 bug。
 ## 5. 当前基线读数（改动后用同一命令复测）
 
 ```bash
-pnpm test    # Test Files 18 passed / Tests 213 passed
-pnpm build   # three 743.00 kB (gzip 187.59) / r3f 206.70 (65.14) / index 316.32 (103.66) / PlanetPage 32.38 (10.23)
+pnpm test    # Test Files 21 passed / Tests 224 passed
+pnpm build   # three 743.00 kB (gzip 187.59) / r3f 206.70 (65.14) / index 316.36 (103.69) / PlanetPage 34.92 (11.07)
 pnpm lint    # 0 warnings 0 errors
 ```
 
 2026-11-16 实测（f082140 之上）。相对上一基线：+65 用例全部为新增文件（布局/大小/定位/动作/音效），既有测试零删改；index +2.85 kB raw / +1.04 gzip，PlanetPage +7.96 kB raw / +2.35 gzip，three 本体不动。
+
+2026-11-17 A 卡实测（feat/companion-growth-alignment 之上，含同日方案一修订、rev3「面板撤伙伴动作」、rev4「HUD 标签改已解锁」、rev5「伙伴动作独立栏」）。+11 用例全部为新增文件（`menuAccess.test.ts` 4 个、`growth.nextUnlock.test.ts` 3 个、`actionCatalog.test.ts` 4 个），既有测试零删改；index +0.04 kB raw / +0.03 gzip，PlanetPage +2.54 kB raw / +0.84 gzip，three/r3f 不动。
 
 `growth.interactions` 之类计数只增不减，测试与验收时不要假设它等于点击次数。
 
@@ -65,6 +67,7 @@ pnpm lint    # 0 warnings 0 errors
 7. **持久化扩展（主管 2026-11-16 追认）**：`stars[].size`（50–150 整数，缺省/非法回 100，`clampStarSize` 夹取）；settings 追加 `soundEnabled` / `soundVolume`（zustand 浅合并补默认，未 bump version）。四个键名与第 4 节重建语义未动，旧数据 hydrate 正常。等级由 size 实时算出不另存；默认 100 档光效系数全 1，默认画面逐位不变。
 8. **流程偏差**：`f082140` 由协作者直推 master，未走 PR/审批，AGENTS.md 当时未同步更新；提交身份挂的是其弃用旧号 `ZSQ114coder` 的邮箱（推送权限实际来自 reterhog354-star）。主管 2026-11-16 选择接受直推、事后审查追认（代码层红线全部守住，读数见第 5 节），本条及 4–7 为追认记录。协作者需把本机 `git config user.email` 改回现用账号。
 9. **E1 选择行弃用**：week1 上的 E1「伙伴互动自选」（选择行 + `actionChoice.ts` + settings 的 `companionAction` 字段）与径向菜单是同一功能两套实现，主管 2026-11-16 拍板**留径向菜单、弃 E1 选择行**。week1 分支保留作历史、不合入 master；E1 的 PR #3/#4 读数与偏差记录随之作废。此后协作恢复 9.1 常规流程：从 master 开分支、PR 进 master、原开发者审批合并。
+10. **A 卡部分回退偏差 5（主管 2026-11-17 拍板，同日两次修订：方案一「轻分离」、rev3「面板撤伙伴动作」）**：径向菜单的「挥手」恢复解锁门控——未解锁时按钮锁态（`aria-disabled`、锁图标、文案「挥手 · 互动 12 次解锁」、点击无效），解锁判定与点击随机池共用 `growth.unlocks`（`menuAccess.ts`）。坐下/睡觉/跳舞/比心仍天生可用、不进随机池。**成长面板只列植物与装饰（4 项）**：伙伴动作（含四个解锁动作）一律不进面板，「戳伙伴时随机抽中」后缀随动作项撤掉；面板「再走多远」提示用 `nextUnlock(growth, ['plant', 'decor'])` 跳过动作（`nextUnlock` 新增可选 kinds 参数，默认行为不变）。自由动作的归属地是径向菜单，解锁动作是戳伙伴的随机彩蛋（挥手另在菜单按解锁开放）。`actionPool` 与解锁阈值未动。门控对照（rev2）：菜单 DOM 逐字节相同、全页 pixelDiff=17 且全部低于差异阈值；rev3 面板 8 项缩到 4 项，页高/滚动条差异属预期后果。**计数口径未动**（`openStar` 仍计互动），B 卡单独改。首页「星球状态」格按全部解锁计数（含动作），主管 rev4 拍板标签由「已解锁装饰」改为「已解锁」，口径与计数一致。rev5 主管指令「伙伴动作单独出一栏」（口径选全 9 动作）：新增 `CompanionActionsPanel` 卡片与成长卡并排（lg 两栏、窄屏堆叠），列全 9 个动作——自由五动作标「菜单」天生可用，四个彩蛋标「彩蛋」、锁态信 `growth.unlocks`（未解锁注明「互动 N 次解锁」、已解锁注明「戳伙伴时随机抽中」）；目录在 `actionCatalog.ts`，与 `actionPool` 映射由测试锁一致。修订记录：初版曾分「初始动作 / 成长解锁」两组 → 方案一撤组（`INITIAL_ACTIONS` 与其测试组删除，218→217）→ rev3 主管指令「删除成长记录中的伙伴动作」，面板只留植物/装饰（+3 新用例，217→220）→ rev4 主管指令「已解锁装饰那里改为已解锁」，HUD 标签改名（计数与用例不变）→ rev5 伙伴动作独立栏（+4 新用例，220→224）。均为未合并卡内修订。
 
 ## 7. 验收怎么做
 

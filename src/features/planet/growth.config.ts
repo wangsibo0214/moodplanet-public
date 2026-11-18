@@ -100,10 +100,14 @@ export function evaluateUnlocks(growth: PlanetGrowth): string[] {
   return UNLOCKS.filter((def) => owned.has(def.id)).map((def) => def.id)
 }
 
-/** 下一个还没拿到的解锁项，用来在界面上给一句「再走多远」的提示。 */
-export function nextUnlock(growth: PlanetGrowth): { def: UnlockDef; lack: string } | null {
+/** 下一个还没拿到的解锁项，用来在界面上给一句「再走多远」的提示；kinds 可限定只看某几类。 */
+export function nextUnlock(
+  growth: PlanetGrowth,
+  kinds?: readonly UnlockKind[],
+): { def: UnlockDef; lack: string } | null {
   const owned = new Set(growth.unlocks)
   for (const def of UNLOCKS) {
+    if (kinds && !kinds.includes(def.kind)) continue
     if (owned.has(def.id)) continue
     const needSaved = def.saved !== undefined ? Math.max(0, def.saved - growth.totalSaved) : null
     const needPoke =

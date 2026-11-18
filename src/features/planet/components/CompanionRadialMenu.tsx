@@ -3,6 +3,7 @@ import {
   Armchair,
   Hand,
   Heart,
+  Lock,
   Moon,
   MoveUp,
   PartyPopper,
@@ -16,6 +17,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore'
 import type { CompanionActionKind } from '@/types/mood'
 import { cn } from '@/utils/cn'
 
+import { menuActionLock } from '../lib/menuAccess'
 import { companionAnchor } from '../scene/companionAnchor'
 
 /**
@@ -72,6 +74,7 @@ export function CompanionRadialMenu() {
   const open = usePlanetStore((state) => state.companionMenuOpen)
   const close = usePlanetStore((state) => state.closeCompanionMenu)
   const perform = usePlanetStore((state) => state.performCompanionAction)
+  const growth = usePlanetStore((state) => state.growth)
   const reduceMotion = useSettingsStore((state) => state.reduceMotion)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const calm = reduceMotion || prefersReducedMotion
@@ -183,6 +186,7 @@ export function CompanionRadialMenu() {
   )
 
   const handleSelect = (kind: CompanionActionKind) => {
+    if (menuActionLock(kind, growth)) return
     if (selectTimer.current !== 0) window.clearTimeout(selectTimer.current)
     setSelected(kind)
     suppressWhoosh.current = true
@@ -219,6 +223,7 @@ export function CompanionRadialMenu() {
           const ty = Math.sin(angle) * RADIUS
           const Icon = action.icon
           const isSelected = selected === action.kind
+          const lock = menuActionLock(action.kind, growth)
           return (
             <div
               key={action.kind}
@@ -234,18 +239,25 @@ export function CompanionRadialMenu() {
                 type="button"
                 role="menuitem"
                 aria-label={`让伙伴${action.label}`}
+                aria-disabled={lock ? true : undefined}
                 data-sound="none"
-                onClick={() => handleSelect(action.kind)}
+                onClick={lock ? undefined : () => handleSelect(action.kind)}
                 className={cn(
-                  'glass-panel pointer-events-auto grid size-12 cursor-pointer place-items-center rounded-full',
+                  lock
+                    ? 'glass-panel pointer-events-auto grid size-12 cursor-not-allowed place-items-center rounded-full opacity-50'
+                    : 'glass-panel pointer-events-auto grid size-12 cursor-pointer place-items-center rounded-full',
                   'text-ink-300 shadow-float transition-all duration-200 ease-soft',
-                  'hover:scale-110 hover:text-ink-50 hover:shadow-glow-iris',
-                  'focus-visible:scale-110 focus-visible:text-ink-50',
-                  'active:scale-95',
+                  !lock && 'hover:scale-110 hover:text-ink-50 hover:shadow-glow-iris',
+                  !lock && 'focus-visible:scale-110 focus-visible:text-ink-50',
+                  !lock && 'active:scale-95',
                   isSelected && 'scale-110 text-butter-300 ring-2 ring-butter-300/60',
                 )}
               >
-                <Icon className="size-5" strokeWidth={1.9} aria-hidden />
+                {lock ? (
+                  <Lock className="size-4" strokeWidth={2} aria-hidden />
+                ) : (
+                  <Icon className="size-5" strokeWidth={1.9} aria-hidden />
+                )}
               </button>
               {/* 动作名称：悬停或选中时浮现 */}
               <span
@@ -255,9 +267,10 @@ export function CompanionRadialMenu() {
                   'opacity-0 transition-opacity duration-200 ease-soft',
                   'group-hover:opacity-100 group-focus-within:opacity-100',
                   isSelected && 'opacity-100',
+                  lock && 'opacity-100',
                 )}
               >
-                {action.label}
+                {lock ? `${action.label} · ${lock.hint}` : action.label}
               </span>
             </div>
           )

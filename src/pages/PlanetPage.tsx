@@ -3,6 +3,7 @@ import { AlertTriangle, X } from 'lucide-react'
 
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui'
 import { MOOD_MAP } from '@/features/mood/mood.config'
+import { CompanionActionsPanel } from '@/features/planet/components/CompanionActionsPanel'
 import { CompanionBubble } from '@/features/planet/components/CompanionBubble'
 import { CompanionRadialMenu } from '@/features/planet/components/CompanionRadialMenu'
 import { MemoryStarPanel } from '@/features/planet/components/MemoryStarPanel'
@@ -49,7 +50,7 @@ export default function PlanetPage() {
         hint: '每成功保存一条记录点亮一颗',
       },
       {
-        label: '已解锁装饰',
+        label: '已解锁',
         value: `${growth.unlocks.length} / ${UNLOCKS.length}`,
         hint: '随累计记录与互动增加，不会减少',
       },
@@ -138,7 +139,10 @@ export default function PlanetPage() {
         </Card>
       </section>
 
-      <PlanetGrowthPanel />
+      <div className="grid gap-5 lg:grid-cols-2 lg:gap-8">
+        <PlanetGrowthPanel />
+        <CompanionActionsPanel />
+      </div>
     </div>
   )
 }
