@@ -116,7 +116,7 @@ export function nextUnlock(
         : null
     const parts: string[] = []
     if (needSaved !== null && needSaved > 0) parts.push(`再保存 ${needSaved} 条记录`)
-    if (needPoke !== null && needPoke > 0) parts.push(`再和星球互动 ${needPoke} 次`)
+    if (needPoke !== null && needPoke > 0) parts.push(`再和伙伴互动 ${needPoke} 次`)
     return { def, lack: parts.join('，或') }
   }
   return null

@@ -52,7 +52,7 @@ export default function PlanetPage() {
       {
         label: '已解锁',
         value: `${growth.unlocks.length} / ${UNLOCKS.length}`,
-        hint: '随累计记录与互动增加，不会减少',
+        hint: '随累计记录与伙伴互动增加，不会减少',
       },
     ]
   }, [environment.mood, growth.unlocks.length, starCount])

@@ -88,7 +88,7 @@ export interface PlanetEnvironment {
 export interface PlanetGrowth {
   /** 累计成功保存次数 */
   totalSaved: number
-  /** 累计主动互动次数（点伙伴、点记忆星） */
+  /** 累计主动互动次数（戳伙伴、菜单动作；看星详情不计） */
   interactions: number
   /** 已解锁的植物 / 装饰 / 伙伴动作 id */
   unlocks: string[]

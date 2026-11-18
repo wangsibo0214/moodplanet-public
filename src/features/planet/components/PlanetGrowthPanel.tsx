@@ -75,7 +75,7 @@ export function PlanetGrowthPanel() {
           星球成长
         </CardTitle>
         <CardDescription>
-          累计保存 {growth.totalSaved} 条记录 · 主动互动 {growth.interactions} 次。
+          累计保存 {growth.totalSaved} 条记录 · 和伙伴互动 {growth.interactions} 次。
           {next ? `${next.lack}，就能解锁「${next.def.name}」。` : '所有装饰都已长齐。'}
         </CardDescription>
       </CardHeader>

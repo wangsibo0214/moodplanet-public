@@ -221,12 +221,11 @@ export const usePlanetStore = create<PlanetState>()((set, get) => {
         set({ selectedRecordId: null })
         return
       }
-      /* 打开一颗星也算一次主动互动，成长不止来自写记录 */
+      /* 看星详情不算互动：计数只认伙伴互动（戳伙伴、菜单动作） */
       commit({
         selectedRecordId: recordId,
         sizedStarId: null,
         companionMenuOpen: false,
-        growth: withInteraction(get().growth),
       })
     },
 
