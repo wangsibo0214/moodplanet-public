@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useMediaQuery } from '@/hooks'
@@ -30,8 +30,24 @@ export function PlanetStage() {
   const isNarrow = useMediaQuery('(max-width: 640px)')
   const calm = reduceMotion || prefersReducedMotion
 
-  /* 探测只在挂载时做一次；探测用的上下文会立即释放，不会挤占 R3F 的配额 */
-  const webgl = useMemo(() => isWebGLAvailable(), [])
+  /* 探测用的上下文会立即释放，不会挤占 R3F 的配额 */
+  const [webgl, setWebgl] = useState(() => isWebGLAvailable())
+  const [attempt, setAttempt] = useState(0)
+
+  const retry = useCallback(() => {
+    setWebgl(isWebGLAvailable())
+    setAttempt((n) => n + 1)
+  }, [])
+
+  /* 降级后回到前台自动重探：GPU 驱动恢复时不必手动刷新 */
+  useEffect(() => {
+    if (webgl) return
+    const reprobe = () => {
+      if (document.visibilityState === 'visible') setWebgl(isWebGLAvailable())
+    }
+    document.addEventListener('visibilitychange', reprobe)
+    return () => document.removeEventListener('visibilitychange', reprobe)
+  }, [webgl])
 
   if (!webgl) {
     return (
@@ -40,6 +56,7 @@ export function PlanetStage() {
           calm={calm}
           title="这台设备暂时无法渲染 3D 星球"
           description="浏览器没有开启 WebGL，或者显卡驱动不允许。心情记录、记忆星和情绪档案都照常可用，星球会在支持的设备上等你。"
+          onRetry={retry}
         />
       </div>
     )
@@ -48,12 +65,14 @@ export function PlanetStage() {
   return (
     <div className={STAGE_CLASS}>
       <ErrorBoundary
+        key={attempt}
         label="3D 星球"
         fallback={
           <PlanetFallback
             calm={calm}
             title="星球这一次没能升起来"
-            description="3D 场景渲染时出了一点问题，已经自动切回平面星球。你的记录功能不受影响，刷新页面通常会恢复。"
+            description="3D 场景渲染时出了一点问题，已经自动切回平面星球。你的记录功能不受影响，点重试或刷新页面通常会恢复。"
+            onRetry={retry}
           />
         }
       >
