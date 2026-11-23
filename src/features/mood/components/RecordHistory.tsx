@@ -53,7 +53,8 @@ export function RecordHistory({ records, editingId = null, onEdit, onDelete }: R
         />
       ) : (
         <>
-          <ListToolbar className="mt-5" {...list} searchLabel="搜索历史记录" />
+          {/* 列表整宽后控件不跟着铺满，否则两个下拉各占近半页宽 */}
+          <ListToolbar className="mt-5 max-w-2xl" {...list} searchLabel="搜索历史记录" />
 
           {list.matchedCount === 0 ? (
             <EmptyState
@@ -68,7 +69,7 @@ export function RecordHistory({ records, editingId = null, onEdit, onDelete }: R
               }
             />
           ) : (
-            <ul className="mt-5 flex flex-col gap-3">
+            <ul className="mt-5 grid gap-3 lg:grid-cols-2 lg:items-start">
               {list.pageItems.map((record) => {
                 const mood = MOOD_MAP[record.mood]
                 const confirming = confirmId === record.id

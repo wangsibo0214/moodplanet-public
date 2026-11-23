@@ -95,7 +95,8 @@ export default function MoodRecordPage() {
         </div>
       ) : null}
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,23rem)] lg:gap-8">
+      {/* 上下排版：表单区整宽，历史记录跟在下面，不再挤成右侧窄栏 */}
+      <div className="flex flex-col gap-6 lg:gap-8">
         <div className="flex min-w-0 flex-col gap-6">
           <RecordForm
             key={`${editing?.id ?? 'new'}-${formKey}`}
