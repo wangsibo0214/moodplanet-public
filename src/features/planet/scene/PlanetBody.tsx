@@ -2,8 +2,11 @@ import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+import { bakeShoreMask } from '../lib/shoreMask'
 import { buildPlanetGeometry, SEA_LEVEL } from '../lib/terrain'
+import { fadeStep } from '../lib/unlockFade'
 import type { EnvRuntime } from './moodEnvironment'
+import { createSeaMaterial, createSeaUniforms } from './waterMaterial'
 
 interface PlanetBodyProps {
   /**
@@ -12,20 +15,55 @@ interface PlanetBodyProps {
    */
   detail: number
   env: EnvRuntime
+  calm: boolean
+  /** 已解锁「粼粼海面」 */
+  shimmerSea: boolean
 }
 
-export function PlanetBody({ detail, env }: PlanetBodyProps) {
+export function PlanetBody({ detail, env, calm, shimmerSea }: PlanetBodyProps) {
   const geometry = useMemo(() => buildPlanetGeometry(detail), [detail])
-  const sea = useRef<THREE.MeshStandardMaterial>(null)
+  /* 海面细分跟着地形档位走：波浪要读得出低多边形 facets，又不能白给手机端加面数 */
+  const seaWidth = detail >= 13 ? 64 : 48
+  const shore = useMemo(() => {
+    const width = detail >= 13 ? 256 : 128
+    const height = width / 2
+    const texture = new THREE.DataTexture(
+      bakeShoreMask(width, height),
+      width,
+      height,
+      THREE.RedFormat,
+    )
+    texture.minFilter = THREE.LinearFilter
+    texture.magFilter = THREE.LinearFilter
+    texture.wrapS = THREE.RepeatWrapping
+    texture.needsUpdate = true
+    return texture
+  }, [detail])
+  const uniforms = useMemo(() => createSeaUniforms(shore), [shore])
+  const sea = useMemo(() => createSeaMaterial(uniforms), [uniforms])
+  const shimmerFade = useRef(0)
+  /* 逐帧写入的 GPU 资源用 ref 持有，与植被材质同一约定 */
+  const liveSea = useRef(sea)
+  const liveUniforms = useRef(uniforms)
 
   useEffect(() => () => geometry.dispose(), [geometry])
+  useEffect(
+    () => () => {
+      shore.dispose()
+      sea.dispose()
+    },
+    [shore, sea],
+  )
 
-  useFrame(() => {
-    if (!sea.current) return
+  useFrame((_, dt) => {
     /* 平静时粗糙度压到接近镜面，雨后则更湿亮；两者读起来都是「水面很稳」 */
-    sea.current.roughness = env.values.waterRoughness
-    sea.current.opacity = env.values.waterOpacity
-    sea.current.emissiveIntensity = env.values.waterEmissive
+    liveSea.current.roughness = env.values.waterRoughness
+    liveSea.current.opacity = env.values.waterOpacity
+    liveSea.current.emissiveIntensity = env.values.waterEmissive
+    liveUniforms.current.uTime.value = env.time
+    liveUniforms.current.uGlow.value = env.values.glow
+    shimmerFade.current = fadeStep(shimmerFade.current, shimmerSea ? 1 : 0, dt, calm)
+    liveUniforms.current.uShimmer.value = shimmerFade.current
   })
 
   return (
@@ -35,19 +73,8 @@ export function PlanetBody({ detail, env }: PlanetBodyProps) {
       </mesh>
 
       {/* 海平面薄壳：只盖住低洼处，让陆地自然露出来 */}
-      <mesh>
-        <sphereGeometry args={[SEA_LEVEL * 1.004, 48, 32]} />
-        <meshStandardMaterial
-          ref={sea}
-          color="#4E9BDD"
-          emissive="#123A5E"
-          emissiveIntensity={0.45}
-          roughness={0.16}
-          metalness={0.05}
-          transparent
-          opacity={0.78}
-          depthWrite={false}
-        />
+      <mesh material={sea}>
+        <sphereGeometry args={[SEA_LEVEL * 1.004, seaWidth, Math.round(seaWidth * 0.75)]} />
       </mesh>
     </group>
   )

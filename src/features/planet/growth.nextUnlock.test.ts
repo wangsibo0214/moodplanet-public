@@ -29,7 +29,7 @@ describe('nextUnlock 的 kinds 限定', () => {
   })
 
   it('装饰长齐后限定返回 null，默认仍会报伙伴动作', () => {
-    const g = withUnlocks(growth(10, 0))
+    const g = withUnlocks(growth(20, 0))
     expect(nextUnlock(g)?.def.id).toBe('companion-twirl')
     expect(nextUnlock(g, ['plant', 'decor'])).toBeNull()
   })

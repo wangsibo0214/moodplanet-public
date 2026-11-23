@@ -14,6 +14,7 @@ import { Decorations } from './Decorations'
 import { EnvironmentLights } from './EnvironmentLights'
 import { MemoryStars } from './MemoryStars'
 import { PlanetBody } from './PlanetBody'
+import { Seaside } from './Seaside'
 import { SpaceParticles } from './SpaceParticles'
 import { StarPanelTracker } from './StarPanelTracker'
 import { Vegetation, type VegetationQuality } from './Vegetation'
@@ -188,6 +189,10 @@ export function PlanetScene({ calm, quality, detail }: PlanetSceneProps) {
   const crystal = usePlanetStore((state) => state.growth.unlocks.includes('crystal-cluster'))
   const lanternRing = usePlanetStore((state) => state.growth.unlocks.includes('lantern-ring'))
   const fireflies = usePlanetStore((state) => state.growth.unlocks.includes('fireflies'))
+  const glowMushroom = usePlanetStore((state) => state.growth.unlocks.includes('glow-mushroom'))
+  const lighthouse = usePlanetStore((state) => state.growth.unlocks.includes('lighthouse'))
+  const pierBoat = usePlanetStore((state) => state.growth.unlocks.includes('pier-boat'))
+  const shimmerSea = usePlanetStore((state) => state.growth.unlocks.includes('shimmer-sea'))
 
   /* 运行时只建一次；换心情只改目标值，由 advance 逐帧过渡，不重建场景 */
   const [env] = useState(() => createEnvironment(mood))
@@ -206,9 +211,16 @@ export function PlanetScene({ calm, quality, detail }: PlanetSceneProps) {
 
       <IntroRig calm={calm}>
         <SpinGroup running={!calm && !userTookOver} onTakeOver={takeOver}>
-          <PlanetBody detail={detail} env={env} />
-          <Vegetation quality={quality} env={env} glowFlower={glowFlower} crystal={crystal} />
+          <PlanetBody detail={detail} env={env} calm={calm} shimmerSea={shimmerSea} />
+          <Vegetation
+            quality={quality}
+            env={env}
+            glowFlower={glowFlower}
+            crystal={crystal}
+            glowMushroom={glowMushroom}
+          />
           <Decorations env={env} lanternRing={lanternRing} />
+          <Seaside env={env} calm={calm} lighthouse={lighthouse} pier={pierBoat} />
           <Companion calm={calm} env={env} />
         </SpinGroup>
 

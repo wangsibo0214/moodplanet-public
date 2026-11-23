@@ -29,6 +29,7 @@ const COUNTS: Record<
     dew: number
     glowFlowers: number
     crystals: number
+    mushrooms: number
   }
 > = {
   reduced: {
@@ -40,6 +41,7 @@ const COUNTS: Record<
     dew: 16,
     glowFlowers: 12,
     crystals: 5,
+    mushrooms: 8,
   },
   normal: {
     candidates: 3400,
@@ -50,6 +52,7 @@ const COUNTS: Record<
     dew: 34,
     glowFlowers: 22,
     crystals: 9,
+    mushrooms: 16,
   },
 }
 
@@ -97,6 +100,12 @@ const CRYSTAL_PARTS: readonly PartSpec[] = [
 /** 水珠挂在草尖与花头上 */
 const DEW_PARTS: readonly PartSpec[] = [
   { offset: 0.055, scale: [1, 1, 1], palette: ['#CFE9FF'] },
+]
+/** 蘑菇：冷光伞盖，和星屑花的暖光错开；高程带落在森林里 */
+const MUSHROOM_CAP = ['#BFE2FF', '#D8CEFF', '#A6E9D2']
+const MUSHROOM_PARTS: readonly PartSpec[] = [
+  { offset: 0.012, scale: [0.55, 0.8, 0.55], palette: ['#E8E0F0'] },
+  { offset: 0.026, scale: [1.15, 0.62, 1.15], palette: MUSHROOM_CAP },
 ]
 
 interface Placement {
@@ -153,9 +162,15 @@ interface Layout {
   dew: Placement[]
   glowFlower: Placement[]
   crystal: Placement[]
+  mushroom: Placement[]
 }
 
-function buildLayout(quality: VegetationQuality, glowFlower: boolean, crystal: boolean): Layout {
+function buildLayout(
+  quality: VegetationQuality,
+  glowFlower: boolean,
+  crystal: boolean,
+  glowMushroom: boolean,
+): Layout {
   const counts = COUNTS[quality]
   const random = createRandom(0x5eed1e5)
   const land = sampleSurfacePoints(counts.candidates, 0.05, 0.66)
@@ -209,6 +224,18 @@ function buildLayout(quality: VegetationQuality, glowFlower: boolean, crystal: b
           [0.7, 1.5],
         )
       : NO_PLACEMENT,
+    /* 蘑菇排在所有既有抽取之后：随机数消耗顺序不变，解锁前后既有植被逐位不动 */
+    mushroom: glowMushroom
+      ? scatter(
+          pickEvenly(land.filter(inBand(0.15, 0.34)), counts.mushrooms).filter(
+            (point) =>
+              awayFromCompanionHome(point) && !blocksCompanionView(point.dir, point.radius, 0.05),
+          ),
+          random,
+          MUSHROOM_PARTS,
+          [0.8, 1.4],
+        )
+      : NO_PLACEMENT,
   }
 }
 
@@ -219,6 +246,7 @@ interface Assets {
   dew: THREE.MeshStandardMaterial
   glow: THREE.MeshStandardMaterial
   crystal: THREE.MeshStandardMaterial
+  mushroom: THREE.MeshStandardMaterial
 }
 
 function createAssets(uniforms: PlantUniforms): Assets {
@@ -235,6 +263,8 @@ function createAssets(uniforms: PlantUniforms): Assets {
       glowStem: new THREE.CylinderGeometry(0.0022, 0.003, 0.028, 4),
       glowHead: new THREE.SphereGeometry(0.0105, 8, 6),
       crystal: new THREE.OctahedronGeometry(0.021, 0),
+      mushroomStem: new THREE.CylinderGeometry(0.0035, 0.0045, 0.024, 5),
+      mushroomCap: new THREE.SphereGeometry(0.011, 8, 5),
     },
     plant: createPlantMaterial(false, uniforms),
     bloom: createPlantMaterial(true, uniforms),
@@ -268,6 +298,14 @@ function createAssets(uniforms: PlantUniforms): Assets {
       flatShading: true,
       depthWrite: false,
     }),
+    mushroom: new THREE.MeshStandardMaterial({
+      color: '#DCEBFF',
+      emissive: '#7FB8E0',
+      emissiveIntensity: 0.7,
+      roughness: 0.45,
+      metalness: 0,
+      flatShading: true,
+    }),
   }
 }
 
@@ -279,9 +317,11 @@ export interface VegetationProps {
   glowFlower: boolean
   /** 已解锁「晶石簇」 */
   crystal: boolean
+  /** 已解锁「发光蘑菇丛」 */
+  glowMushroom: boolean
 }
 
-export function Vegetation({ quality, env, glowFlower, crystal }: VegetationProps) {
+export function Vegetation({ quality, env, glowFlower, crystal, glowMushroom }: VegetationProps) {
   /* uniform 必须先于材质创建：两份材质共用同一组，每帧只写一次 */
   const uniforms = useMemo(() => createPlantUniforms(), [])
   const assets = useMemo<Assets>(() => createAssets(uniforms), [uniforms])
@@ -290,8 +330,8 @@ export function Vegetation({ quality, env, glowFlower, crystal }: VegetationProp
   const bloom = useRef(assets.bloom)
   const dew = useRef(assets.dew)
   const layout = useMemo(
-    () => buildLayout(quality, glowFlower, crystal),
-    [quality, glowFlower, crystal],
+    () => buildLayout(quality, glowFlower, crystal, glowMushroom),
+    [quality, glowFlower, crystal, glowMushroom],
   )
 
   useEffect(
@@ -302,6 +342,7 @@ export function Vegetation({ quality, env, glowFlower, crystal }: VegetationProp
       assets.dew.dispose()
       assets.glow.dispose()
       assets.crystal.dispose()
+      assets.mushroom.dispose()
     },
     [assets],
   )
@@ -407,6 +448,23 @@ export function Vegetation({ quality, env, glowFlower, crystal }: VegetationProp
             material={assets.crystal}
             matrices={layout.crystal[1].matrices}
             colors={layout.crystal[1].colors}
+          />
+        </>
+      )}
+
+      {glowMushroom && (
+        <>
+          <Instances
+            geometry={geometries.mushroomStem}
+            material={assets.plant}
+            matrices={layout.mushroom[0].matrices}
+            colors={layout.mushroom[0].colors}
+          />
+          <Instances
+            geometry={geometries.mushroomCap}
+            material={assets.mushroom}
+            matrices={layout.mushroom[1].matrices}
+            colors={layout.mushroom[1].colors}
           />
         </>
       )}
