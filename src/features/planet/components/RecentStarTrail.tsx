@@ -25,7 +25,8 @@ export function RecentStarTrail() {
   const trail = [...recent].reverse()
 
   return (
-    <Card className="lg:col-span-2">
+    /* min-w-0：卡片里的标题是不换行的 truncate，不给 grid 轨道松绑会把窄屏文档撑宽 */
+    <Card className="min-w-0 lg:col-span-2">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Orbit className="size-4 text-butter-400" strokeWidth={1.75} aria-hidden />
