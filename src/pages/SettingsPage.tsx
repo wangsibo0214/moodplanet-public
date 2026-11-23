@@ -33,7 +33,7 @@ const USAGE_LINES = [
   '保存后星球环境会按当天全部记录综合变化：哪种心情最多就是那天的主色，次数相同听较晚那条；每条记录仍会亮起一颗与自己关联的记忆星，点星球上的星或「记忆星」页都能回到那条记录。',
   '「时光胶囊」写给未来的自己：封存后正文在任何普通界面都不显示，到了开启日期才会醒来。',
   '「情绪档案」把全部本地记录汇总成七天节奏、心情分布、高频标签与关键词、心情日历和记忆星回顾。',
-  '动画看累了可以在这里开启「降低动效」；系统开启「减少动态效果」时也会自动生效。',
+  '动效不再单独设置：系统开启「减少动态效果」时，星点闪烁、星云漂浮与过渡动画会自动收敛。',
 ]
 
 const STORAGE_LINES = [
@@ -71,10 +71,8 @@ function DocList({ lines }: { lines: readonly string[] }) {
 export default function SettingsPage() {
   useDocumentTitle('设置')
 
-  const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const meteorShower = useSettingsStore((s) => s.meteorShower)
   const starDensity = useSettingsStore((s) => s.starDensity)
-  const setReduceMotion = useSettingsStore((s) => s.setReduceMotion)
   const setMeteorShower = useSettingsStore((s) => s.setMeteorShower)
   const setStarDensity = useSettingsStore((s) => s.setStarDensity)
   const soundEnabled = useSettingsStore((s) => s.soundEnabled)
@@ -127,19 +125,8 @@ export default function SettingsPage() {
         description="调整星空背景的密度与动效强度。"
       >
         <SettingsRow
-          label="降低动效"
-          description="关闭星点闪烁、星云漂浮与背景流星雨。系统开启「减少动态效果」时也会自动生效。"
-          control={
-            <Toggle
-              label="降低动效"
-              checked={reduceMotion}
-              onChange={setReduceMotion}
-            />
-          }
-        />
-        <SettingsRow
           label="背景流星雨"
-          description="在星空间点缀少量划过的流星。开启「降低动效」或系统减少动态效果时不会显示。"
+          description="在星空间点缀少量划过的流星。系统开启「减少动态效果」时不会显示。"
           control={
             <Toggle
               label="背景流星雨"

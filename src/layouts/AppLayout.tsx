@@ -4,7 +4,6 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { StarfieldBackground } from '@/components/background/StarfieldBackground'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useMoodStore } from '@/stores/useMoodStore'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 import { cn } from '@/utils/cn'
 
 import { MobileNav } from './MobileNav'
@@ -15,9 +14,8 @@ import { TopBar } from './TopBar'
 export function AppLayout() {
   const { pathname } = useLocation()
   const hydrate = useMoodStore((s) => s.hydrate)
-  const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
-  const calm = reduceMotion || prefersReducedMotion
+  const calm = prefersReducedMotion
 
   /* 路由切换时内容高度会突变，需要手动复位滚动位置 */
   useEffect(() => {

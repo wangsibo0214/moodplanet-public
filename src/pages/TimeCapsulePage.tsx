@@ -8,7 +8,6 @@ import { CapsuleStage } from '@/features/capsule/components/CapsuleStage'
 import { capsuleStatus } from '@/features/capsule/capsuleTime'
 import { useDocumentTitle, useMediaQuery } from '@/hooks'
 import { useCapsuleStore } from '@/stores/useCapsuleStore'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 
 const CAPSULE_STEPS = [
   { step: '01', title: '写下此刻', detail: '一段话、一个念头，或一件很小的好事。' },
@@ -28,9 +27,8 @@ export default function TimeCapsulePage() {
   const saveError = useCapsuleStore((state) => state.saveError)
   const dismissErrors = useCapsuleStore((state) => state.dismissErrors)
 
-  const reduceMotion = useSettingsStore((state) => state.reduceMotion)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
-  const calm = reduceMotion || prefersReducedMotion
+  const calm = prefersReducedMotion
 
   /* 剩余时间每分钟自己走一次，不靠手动刷新 */
   const [now, setNow] = useState(() => new Date())

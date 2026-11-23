@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 
 import { Card, CardDescription, CardHeader, CardTitle, EmptyState } from '@/components/ui'
 import { MOOD_MAP } from '@/features/mood/mood.config'
+import { useMediaQuery } from '@/hooks'
 import { usePlanetStore } from '@/stores/usePlanetStore'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 import { cn } from '@/utils/cn'
 import { formatRecordTime } from '@/utils/date'
 
@@ -18,7 +18,7 @@ export function RecentStarTrail() {
   const stars = usePlanetStore((state) => state.stars)
   const openStar = usePlanetStore((state) => state.openStar)
   const selectedRecordId = usePlanetStore((state) => state.selectedRecordId)
-  const reduceMotion = useSettingsStore((state) => state.reduceMotion)
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   /* 星按记录顺序存着（旧 → 新），取末尾几条即是最近的 */
   const recent = stars.length > TRAIL_COUNT ? stars.slice(-TRAIL_COUNT) : stars
@@ -54,7 +54,7 @@ export function RecentStarTrail() {
                   type="button"
                   onClick={() => {
                     openStar(star.recordId)
-                    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
+                    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
                   }}
                   aria-current={selected ? 'true' : undefined}
                   className={cn(

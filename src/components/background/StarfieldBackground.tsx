@@ -40,12 +40,11 @@ function buildStars(count: number): Star[] {
  */
 export function StarfieldBackground() {
   const density = useSettingsStore((s) => s.starDensity)
-  const reduceMotion = useSettingsStore((s) => s.reduceMotion)
   const meteorShower = useSettingsStore((s) => s.meteorShower)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const isMobile = useMediaQuery('(max-width: 640px)')
 
-  const calm = reduceMotion || prefersReducedMotion
+  const calm = prefersReducedMotion
   const count = isMobile ? Math.round(DENSITY_COUNT[density] / 2) : DENSITY_COUNT[density]
   const stars = useMemo(() => buildStars(count), [count])
   const showMeteors = shouldRenderMeteors(meteorShower, calm)

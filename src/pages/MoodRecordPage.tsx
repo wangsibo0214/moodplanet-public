@@ -5,9 +5,8 @@ import { PageHeader } from '@/components/ui'
 import { RecordForm, type RecordFormValues } from '@/features/mood/components/RecordForm'
 import { RecordHistory } from '@/features/mood/components/RecordHistory'
 import { RecordResult } from '@/features/mood/components/RecordResult'
-import { useDocumentTitle } from '@/hooks'
+import { useDocumentTitle, useMediaQuery } from '@/hooks'
 import { useMoodStore } from '@/stores/useMoodStore'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 import type { MoodRecord } from '@/types/mood'
 
 export default function MoodRecordPage() {
@@ -21,7 +20,7 @@ export default function MoodRecordPage() {
   const updateRecord = useMoodStore((s) => s.updateRecord)
   const deleteRecord = useMoodStore((s) => s.deleteRecord)
   const dismissErrors = useMoodStore((s) => s.dismissErrors)
-  const reduceMotion = useSettingsStore((s) => s.reduceMotion)
+  const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   const [editing, setEditing] = useState<MoodRecord | null>(null)
   const [lastSaved, setLastSaved] = useState<MoodRecord | null>(null)
@@ -32,10 +31,10 @@ export default function MoodRecordPage() {
   useEffect(() => {
     if (!lastSaved) return
     resultRef.current?.scrollIntoView({
-      behavior: reduceMotion ? 'auto' : 'smooth',
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
       block: 'nearest',
     })
-  }, [lastSaved, reduceMotion])
+  }, [lastSaved, prefersReducedMotion])
 
   const handleSubmit = (values: RecordFormValues, analyzed: boolean) => {
     const draft = { ...values, analyzed }
@@ -49,7 +48,7 @@ export default function MoodRecordPage() {
   const handleEdit = (record: MoodRecord) => {
     setEditing(record)
     setFormKey((key) => key + 1)
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' })
   }
 
   const cancelEdit = () => {

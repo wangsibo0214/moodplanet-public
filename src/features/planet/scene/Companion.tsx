@@ -93,7 +93,7 @@ function easeInOutQuad(t: number): number {
 }
 
 interface CompanionProps {
-  /** 关闭持续动画（用户开了减少动效，或系统 prefers-reduced-motion） */
+  /** 关闭持续动画（系统开启 prefers-reduced-motion 时） */
   calm: boolean
   env: EnvRuntime
 }

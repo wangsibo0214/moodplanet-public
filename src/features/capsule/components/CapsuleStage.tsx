@@ -2,7 +2,6 @@ import { lazy, Suspense, useMemo } from 'react'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useMediaQuery } from '@/hooks'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 import type { CapsuleStatus } from '@/types/capsule'
 import { isWebGLAvailable } from '@/utils/webgl'
 
@@ -22,9 +21,8 @@ interface CapsuleStageProps {
 
 /** 胶囊页的 3D 小舞台：渲染不出来时只是一块安静的玻璃，不影响封存与开启。 */
 export function CapsuleStage({ status }: CapsuleStageProps) {
-  const reduceMotion = useSettingsStore((state) => state.reduceMotion)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
-  const calm = reduceMotion || prefersReducedMotion
+  const calm = prefersReducedMotion
 
   /* 探测只在挂载时做一次；探测用的上下文会立即释放 */
   const webgl = useMemo(() => isWebGLAvailable(), [])

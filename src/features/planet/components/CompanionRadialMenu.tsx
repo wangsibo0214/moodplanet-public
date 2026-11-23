@@ -13,7 +13,6 @@ import {
 import { useMediaQuery } from '@/hooks'
 import { sound } from '@/features/sound/soundManager'
 import { usePlanetStore } from '@/stores/usePlanetStore'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 import type { CompanionActionKind } from '@/types/mood'
 import { cn } from '@/utils/cn'
 
@@ -75,9 +74,8 @@ export function CompanionRadialMenu() {
   const close = usePlanetStore((state) => state.closeCompanionMenu)
   const perform = usePlanetStore((state) => state.performCompanionAction)
   const growth = usePlanetStore((state) => state.growth)
-  const reduceMotion = useSettingsStore((state) => state.reduceMotion)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
-  const calm = reduceMotion || prefersReducedMotion
+  const calm = prefersReducedMotion
 
   /* visible 控制挂载（收起动画播完才卸载），expanded 控制展开/收起的目标姿态。
      open 翻转时在渲染期同步调整（React 官方口径），不在 effect 里 setState 引发级联渲染 */

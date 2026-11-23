@@ -40,7 +40,7 @@ const LONG_PRESS_MS = 450
 const LONG_PRESS_MOVE_PX = 10
 /** 右键按下到 contextmenu 的位移超过它视为右键拖星球，不弹面板也不拦截菜单 */
 const RIGHT_DRAG_PX = 5
-/** reduceMotion 下不排期漂移：位移恒为零 */
+/** calm 下不排期漂移：位移恒为零 */
 const ZERO_DRIFT: [number, number, number] = [0, 0, 0]
 
 function easeOutBack(t: number): number {
@@ -97,7 +97,7 @@ function StarNode({ star, env, calm }: StarNodeProps) {
     const rise = easeOutBack(appear.current)
     const lit = hovered || selected
 
-    /* 拖滑块时大小平滑过渡；reduceMotion 直接到位，不排期任何动作 */
+    /* 拖滑块时大小平滑过渡；calm 直接到位，不排期任何动作 */
     displaySize.current = calm ? star.size : smoothStarSize(displaySize.current, star.size, dt)
 
     /* 用户把大小拖过等级边界时给一下柔和光晕反馈；初始挂载不触发，刷新不闪 */
@@ -286,7 +286,7 @@ function StarNode({ star, env, calm }: StarNodeProps) {
             />
           </mesh>
 
-          {/* 珍藏档的细微星光：沿用情绪色、缓慢漂移；reduceMotion 不挂载。
+          {/* 珍藏档的细微星光：沿用情绪色、缓慢漂移；calm 不挂载。
               禁用 raycast，避免粒子扩大星的点击热区 */}
           {visuals.sparkles && !calm && (
             <Sparkles

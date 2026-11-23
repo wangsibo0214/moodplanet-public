@@ -14,11 +14,10 @@ function isSoundName(value: string): value is SoundName {
 
 /** 这些设置落盘时给一声轻确认；音量/开关本身不响，避免拖滑块时连环 beep */
 function isConfirmableChange(
-  prev: { reduceMotion: boolean; meteorShower: boolean; starDensity: string; navCollapsed: boolean },
-  next: { reduceMotion: boolean; meteorShower: boolean; starDensity: string; navCollapsed: boolean },
+  prev: { meteorShower: boolean; starDensity: string; navCollapsed: boolean },
+  next: { meteorShower: boolean; starDensity: string; navCollapsed: boolean },
 ): boolean {
   return (
-    prev.reduceMotion !== next.reduceMotion ||
     prev.meteorShower !== next.meteorShower ||
     prev.starDensity !== next.starDensity ||
     prev.navCollapsed !== next.navCollapsed

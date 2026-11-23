@@ -353,7 +353,7 @@
   animation: var(--animate-rise);
 }
 
-/* 路由切换进入动画：由 AppLayout 按路由 key 触发，降低动效时不挂这个类 */
+/* 路由切换进入动画：由 AppLayout 按路由 key 触发，系统要求减少动效时不挂这个类 */
 @utility page-enter {
   animation: var(--animate-page-in);
 }

@@ -2,7 +2,6 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useMediaQuery } from '@/hooks'
-import { useSettingsStore } from '@/stores/useSettingsStore'
 import { isWebGLAvailable } from '@/utils/webgl'
 
 import { PlanetFallback } from './PlanetFallback'
@@ -25,10 +24,9 @@ function StageSkeleton() {
 }
 
 export function PlanetStage() {
-  const reduceMotion = useSettingsStore((state) => state.reduceMotion)
   const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
   const isNarrow = useMediaQuery('(max-width: 640px)')
-  const calm = reduceMotion || prefersReducedMotion
+  const calm = prefersReducedMotion
 
   /* 探测用的上下文会立即释放，不会挤占 R3F 的配额 */
   const [webgl, setWebgl] = useState(() => isWebGLAvailable())
