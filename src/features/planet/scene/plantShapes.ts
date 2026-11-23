@@ -92,6 +92,13 @@ export interface ObjectExtent {
   halfWidth: number
 }
 
+/**
+ * 十二面体内切半径 / 外接半径。Three.js 的多面体几何把顶点铺在外接球上，
+ * 肉眼看到的包围窄这一档。山体避让仍按外接球算（宁可留宽），
+ * 但伴石要贴着主石边缘站，按外接球侧移会白让出半颗石头、还常常让进海里。
+ */
+export const DODECAHEDRON_INRADIUS_RATIO = 0.7946
+
 /** 按尺寸表建几何：Vegetation.tsx 唯一的建模入口，改数字只会改一处。 */
 export function createPlantGeometry(shape: Shape): THREE.BufferGeometry {
   switch (shape.kind) {
