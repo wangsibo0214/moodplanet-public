@@ -59,23 +59,24 @@ export function StatCards({ stats, starCount }: { stats: ArchiveStats; starCount
 }
 
 export function MoodDistribution({ moodCounts }: { moodCounts: MoodCount[] }) {
-  /* 一条 100% 堆叠色带：每段宽度就是它占全部记录的比例，六段合计恒等于整条，不设可见下限。 */
+  /* 一条 100% 堆叠色带：段宽用 flex-grow 按次数分配，余数由布局算法摊平，
+     段与段之间既不留亚像素缝也不需要分隔线——六段本身就是一条连续的带。
+     端角写死 3px 而不用刻度：本项目的 --radius-sm 是 12px，在 12px 高的带上等于胶囊，
+     两端会收细成半圆，看起来就不是一条平的带。 */
   const total = moodCounts.reduce((sum, entry) => sum + entry.count, 0)
-  const share = (count: number) => (total === 0 ? 0 : (count / total) * 100)
-  const percent = (count: number) =>
-    count === 0 ? '0%' : share(count) < 1 ? '不足 1%' : `${Math.round(share(count))}%`
+  const percent = (count: number) => {
+    if (count === 0 || total === 0) return '0%'
+    const share = (count / total) * 100
+    return share < 1 ? '不足 1%' : `${Math.round(share)}%`
+  }
   return (
     <div className="flex flex-col gap-4">
-      <div aria-hidden className="flex h-3 w-full overflow-hidden rounded-full bg-white/6">
+      <div aria-hidden className="flex h-3 w-full overflow-hidden rounded-[3px] bg-white/6">
         {moodCounts.map(({ mood, count }) => (
           <span
             key={mood}
-            className="block h-full transition-[width] duration-300 ease-soft"
-            style={{
-              width: `${share(count)}%`,
-              backgroundColor: MOOD_MAP[mood].hex,
-              boxShadow: count > 0 ? 'inset -1px 0 0 rgb(0 0 0 / 0.45)' : undefined,
-            }}
+            className="basis-0 transition-[flex-grow] duration-300 ease-soft"
+            style={{ flexGrow: count, backgroundColor: MOOD_MAP[mood].hex }}
           />
         ))}
       </div>

@@ -13,8 +13,10 @@ export interface MoodMeta {
 }
 
 /**
- * 情绪色板：刻意让六种情绪共享同一套明度与饱和度，
+ * 情绪色板：六种情绪共用同一档明度，
  * 这样「难过」不会看起来像错误提示，「开心」也不会刺眼。
+ * 唯一要照顾的是「疲惫」：它原本与「焦虑」同属蓝紫，靠色相分不开。
+ * 区分只能换色相，不能靠调灰——堆叠色带里一段低彩度的颜色看起来像缺陷，不像另一种心情。
  */
 export const MOODS: MoodMeta[] = [
   {
@@ -39,10 +41,10 @@ export const MOODS: MoodMeta[] = [
     key: 'tired',
     label: '疲惫',
     hint: '电量不太够',
-    hex: '#BFB0FB',
-    accentClass: 'text-iris-300',
-    surfaceClass: 'bg-iris-300/12',
-    ringClass: 'ring-iris-300/30',
+    hex: '#FFA57F',
+    accentClass: 'text-clay-300',
+    surfaceClass: 'bg-clay-300/12',
+    ringClass: 'ring-clay-300/30',
   },
   {
     key: 'anxious',

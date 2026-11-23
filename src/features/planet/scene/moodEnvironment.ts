@@ -130,7 +130,7 @@ const OVERRIDES: Record<MoodKey, Partial<EnvSpec>> = {
     hemiGround: '#171433',
     sun: '#DCD6FF',
     fill: '#5C6FD0',
-    tint: '#BFB0FB',
+    tint: '#FFA57F',
 
     ambientIntensity: 0.55,
     hemiIntensity: 0.45,

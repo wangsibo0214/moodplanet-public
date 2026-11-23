@@ -20,7 +20,7 @@
   const HEX = {
     joy: '#FFD170',
     calm: '#7BD9BC',
-    tired: '#BFB0FB',
+    tired: '#FFA57F',
     anxious: '#A48FF2',
     sad: '#6FB6F0',
     excited: '#FFA3BE',
