@@ -6,7 +6,13 @@ import { createRandom, oneOf } from '@/utils/random'
 import type { GroundField } from '../lib/groundField'
 import { writeSurfaceMatrix, type SurfacePoint } from '../lib/terrain'
 import { Instances } from './Instances'
-import { findMountainSites, MOUNTAIN_COUNTS, type PeakSpec } from './mountainPlacement'
+import {
+  findMountainSites,
+  MOUNTAIN_COUNTS,
+  MOUNTAIN_PROFILE,
+  MOUNTAIN_SKIRT,
+  type PeakSpec,
+} from './mountainPlacement'
 import type { VegetationQuality } from './vegetationPlacement'
 
 /**
@@ -27,11 +33,8 @@ const SIDES = 6
  * 中段两圈折环让坡面有转折，读作山脊而不是一枚光滑圆锥。
  */
 function createMountainGeometry(): THREE.BufferGeometry {
-  const rings: { y: number; r: number }[] = [
-    { y: 0.55, r: 0.42 },
-    { y: 0.12, r: 0.85 },
-    { y: -0.45, r: 1.05 },
-  ]
+  /* 峰顶单点成扇形，其下三圈环（含裙边）与避让用的剖面同一份数据 */
+  const rings = [...MOUNTAIN_PROFILE.slice(1), MOUNTAIN_SKIRT]
   const positions: number[] = []
   const ringVerts = rings.map((ring, ri) =>
     Array.from({ length: SIDES }, (_, i) => {

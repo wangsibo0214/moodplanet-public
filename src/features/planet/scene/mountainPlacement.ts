@@ -38,6 +38,77 @@ export interface MountainSpec extends PeakSpec {
   shoulders: PeakSpec[]
 }
 
+/**
+ * 山体剖面（相对尺寸）：r 是相对底宽的比、y 是相对峰高的比。
+ * Mountains.tsx 用它建几何，植被避让用它算「山面高出地表多少」，
+ * 两处必须同一份，否则避让半径与实际画出来的山对不上。
+ */
+export const MOUNTAIN_PROFILE: readonly { r: number; y: number }[] = [
+  { r: 0, y: 1 },
+  { r: 0.42, y: 0.55 },
+  { r: 0.85, y: 0.12 },
+]
+
+/** 裙边：底缘以下再插一圈埋进土里，否则山脚会在球面上浮空。 */
+export const MOUNTAIN_SKIRT = { r: 1.05, y: -0.45 }
+
+/* 山面与地表齐平的那一点：裙边那一段穿过 y=0 的位置，是山的可见外沿。 */
+const SKIRT_START = MOUNTAIN_PROFILE[MOUNTAIN_PROFILE.length - 1]
+const CROSS_FRACTION = SKIRT_START.y / (SKIRT_START.y - MOUNTAIN_SKIRT.y)
+const GROUND_CROSSING = {
+  r: SKIRT_START.r + (MOUNTAIN_SKIRT.r - SKIRT_START.r) * CROSS_FRACTION,
+  y: 0,
+}
+
+const PROFILE_POINTS = [...MOUNTAIN_PROFILE, GROUND_CROSSING]
+
+/** 归一化半径处的剖面高度（线性插值，山脚以外为 0）。 */
+export function mountainProfile(radiusRatio: number): number {
+  const last = PROFILE_POINTS.length - 1
+  if (radiusRatio >= PROFILE_POINTS[last].r) return 0
+  for (let i = 1; i <= last; i++) {
+    if (radiusRatio <= PROFILE_POINTS[i].r) {
+      const a = PROFILE_POINTS[i - 1]
+      const b = PROFILE_POINTS[i]
+      return a.y + ((radiusRatio - a.r) / (b.r - a.r)) * (b.y - a.y)
+    }
+  }
+  return 0
+}
+
+/** 距峰心 d（弧度）处，山面比该处地表高多少；减去球面自身的下沉 d²/2。 */
+export function mountainRiseAboveGround(peak: PeakSpec, d: number): number {
+  return peak.height * mountainProfile(d / peak.base) - (d * d) / 2
+}
+
+/**
+ * 物件要压在山脚以外多远才不被山体吃掉：
+ * 解出「山面高 = 物件最高点的一半」的角距，再加上物件自身的水平半径。
+ * 按最高点判会把小物件推得太远（实测 normal 下草的名额直接不够），
+ * 埋掉一半在画面上又读不出来，所以取半高这条线。
+ */
+export function mountainClearance(
+  peak: PeakSpec,
+  extent: { top: number; halfWidth: number },
+): number {
+  const limit = extent.top / 2
+  let lo = 0
+  /* 1.6 倍底宽已在裙边交线（0.89 倍底宽）之外，那处长出的是负值，
+     而 limit 恒为正，所以 hi 一定落在解的外侧，可以直接作为二分上界。 */
+  let hi = peak.base * 1.6
+  for (let i = 0; i < 24; i++) {
+    const mid = (lo + hi) / 2
+    if (mountainRiseAboveGround(peak, mid) > limit) lo = mid
+    else hi = mid
+  }
+  return Math.min(hi + extent.halfWidth, Math.PI / 2)
+}
+
+/** 主峰与侧峰一起算「一座峰」：侧峰同样会埋掉落在它坡面上的物件。 */
+export function flattenPeaks(sites: readonly MountainSpec[]): PeakSpec[] {
+  return sites.flatMap((site) => [site, ...site.shoulders])
+}
+
 const UP = new THREE.Vector3(0, 1, 0)
 const t1 = new THREE.Vector3()
 const t2 = new THREE.Vector3()

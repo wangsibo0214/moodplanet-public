@@ -6,10 +6,12 @@ import type { GroundField } from '../lib/groundField'
 import { Instances } from './Instances'
 import type { EnvRuntime } from './moodEnvironment'
 import { createPlantMaterial, createPlantUniforms, createRockMaterial, type PlantUniforms } from './plantMaterial'
+import { PLANT_SHAPES, createPlantGeometry, type PlantShapeKind } from './plantShapes'
 import { buildLayout, type VegetationQuality } from './vegetationPlacement'
 
 interface Assets {
-  geometries: Record<string, THREE.BufferGeometry>
+  /** 按 PlantShapeKind 全量收齐：少建一个部件编译就报错，而不是运行时喂给 InstancedMesh undefined */
+  geometries: Record<PlantShapeKind, THREE.BufferGeometry>
   plant: THREE.MeshStandardMaterial
   rock: THREE.MeshStandardMaterial
   bloom: THREE.MeshStandardMaterial
@@ -22,19 +24,19 @@ interface Assets {
 function createAssets(uniforms: PlantUniforms): Assets {
   return {
     geometries: {
-      trunk: new THREE.CylinderGeometry(0.0085, 0.013, 0.05, 5),
-      foliageLow: new THREE.ConeGeometry(0.048, 0.052, 6),
-      foliageHigh: new THREE.ConeGeometry(0.033, 0.044, 6),
-      grass: new THREE.ConeGeometry(0.011, 0.05, 4),
-      stem: new THREE.CylinderGeometry(0.0028, 0.0035, 0.036, 4),
-      flowerHead: new THREE.SphereGeometry(0.0135, 8, 6),
-      rock: new THREE.DodecahedronGeometry(0.042, 0),
-      dew: new THREE.SphereGeometry(0.0062, 6, 5),
-      glowStem: new THREE.CylinderGeometry(0.0022, 0.003, 0.028, 4),
-      glowHead: new THREE.SphereGeometry(0.0105, 8, 6),
-      crystal: new THREE.OctahedronGeometry(0.021, 0),
-      mushroomStem: new THREE.CylinderGeometry(0.0035, 0.0045, 0.024, 5),
-      mushroomCap: new THREE.SphereGeometry(0.011, 8, 5),
+      trunk: createPlantGeometry(PLANT_SHAPES.trunk),
+      foliageLow: createPlantGeometry(PLANT_SHAPES.foliageLow),
+      foliageHigh: createPlantGeometry(PLANT_SHAPES.foliageHigh),
+      grass: createPlantGeometry(PLANT_SHAPES.grass),
+      stem: createPlantGeometry(PLANT_SHAPES.stem),
+      flowerHead: createPlantGeometry(PLANT_SHAPES.flowerHead),
+      rock: createPlantGeometry(PLANT_SHAPES.rock),
+      dew: createPlantGeometry(PLANT_SHAPES.dew),
+      glowStem: createPlantGeometry(PLANT_SHAPES.glowStem),
+      glowHead: createPlantGeometry(PLANT_SHAPES.glowHead),
+      crystal: createPlantGeometry(PLANT_SHAPES.crystal),
+      mushroomStem: createPlantGeometry(PLANT_SHAPES.mushroomStem),
+      mushroomCap: createPlantGeometry(PLANT_SHAPES.mushroomCap),
     },
     plant: createPlantMaterial(false, uniforms),
     /* 石头用静态材质：不随风摆、不随花开度胀缩 */
