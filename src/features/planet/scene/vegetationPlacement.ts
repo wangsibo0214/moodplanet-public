@@ -10,6 +10,7 @@ import {
   type SurfacePoint,
 } from '../lib/terrain'
 import { blocksCompanionView, COMPANION_HOME_DIR } from './companionPlacement'
+import { findMountainSites, MOUNTAIN_COUNTS } from './mountainPlacement'
 
 /**
  * 植被选址与实例展开：纯函数、确定性，不碰 DOM 也不开动画循环。
@@ -179,6 +180,22 @@ const DRY_MARGIN = {
   mushroom: 0.005,
 } as const
 
+/** 树冠最大水平半径：foliageLow 0.048 × 树缩放上限 1.45 */
+const TREE_CANOPY_RADIUS = 0.048 * 1.45
+/** 石块最大水平半径：0.042 × 1.25 × 1.9 */
+const ROCK_RADIUS = 0.042 * 1.25 * 1.9
+/**
+ * 石心到树心的最小角距余弦：两者最大水平半径之和，单位球上弧度≈弦长，
+ * 即使树和石头都抽到最大缩放也不会插到一起。
+ */
+const ROCK_TREE_CLEAR_DOT = Math.cos(TREE_CANOPY_RADIUS + ROCK_RADIUS)
+
+/** 一片禁止落点的球冠：dir 是冠心，dot 是角距余弦上限，落点必须离冠心更远 */
+interface AvoidZone {
+  dir: THREE.Vector3
+  dot: number
+}
+
 export function buildLayout(
   quality: VegetationQuality,
   ground: GroundField,
@@ -202,6 +219,7 @@ export function buildLayout(
     margin: number,
     viewBlock: number,
     count: number,
+    avoid: readonly AvoidZone[] = [],
   ): SurfacePoint[] =>
     pickEvenly(
       land.filter(
@@ -210,16 +228,34 @@ export function buildLayout(
           point.elevation <= max &&
           awayFromCompanionHome(point) &&
           !blocksCompanionView(point.dir, point.radius, viewBlock) &&
-          isDryGround(ground, point.dir, margin),
+          isDryGround(ground, point.dir, margin) &&
+          avoid.every((zone) => point.dir.dot(zone.dir) < zone.dot),
       ),
       count,
       /* 株脚贴到烘出的地皮上：解析半径在面片内部会偏高，树会浮在土面上方 */
     ).map((point) => ({ ...point, radius: groundRadiusAt(ground, point.dir) }))
 
-  const treePoints = select(0.14, 0.46, DRY_MARGIN.tree, 0.2, counts.trees)
+  /* 树避开山体：山底半径最大到约 0.3，而树的高程带与山脚重叠，
+     不避让就会有近半的树嵌进紫色山体里；侧峰也算一座峰。 */
+  const mountainZones: AvoidZone[] = findMountainSites(ground, MOUNTAIN_COUNTS[quality]).flatMap(
+    (site) =>
+      [site, ...site.shoulders].map((peak) => ({
+        dir: peak.dir,
+        dot: Math.cos(peak.base + TREE_CANOPY_RADIUS + 0.01),
+      })),
+  )
+  const treePoints = select(0.14, 0.46, DRY_MARGIN.tree, 0.2, counts.trees, mountainZones)
   const grassPoints = select(0.09, 0.34, DRY_MARGIN.grass, 0.08, counts.grass)
   const flowerPoints = select(0.1, 0.28, DRY_MARGIN.flower, 0.07, counts.flowers)
-  const rockPoints = select(0.33, 0.64, DRY_MARGIN.rock, 0.05, counts.rocks)
+  /* 石头避开树冠：树先选、石后筛，筛选不耗随机数 */
+  const rockPoints = select(
+    0.33,
+    0.64,
+    DRY_MARGIN.rock,
+    0.05,
+    counts.rocks,
+    treePoints.map((point) => ({ dir: point.dir, dot: ROCK_TREE_CLEAR_DOT })),
+  )
 
   return {
     tree: scatter(treePoints, random, TREE_PARTS, [0.75, 1.45]),

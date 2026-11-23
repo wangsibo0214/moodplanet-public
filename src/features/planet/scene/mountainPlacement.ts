@@ -13,6 +13,8 @@ import { blocksCompanionView, COMPANION_HOME_DIR } from './companionPlacement'
  */
 
 export const MOUNTAIN_MIN_ELEVATION = 0.36
+/** 山体簇数：植被选址要按同一份数避让山体，渲染与避让才不会对不上 */
+export const MOUNTAIN_COUNTS: Record<'reduced' | 'normal', number> = { reduced: 5, normal: 9 }
 export const MOUNTAIN_SEP_COS = Math.cos((26 * Math.PI) / 180)
 export const MOUNTAIN_TIP_HEIGHT = 0.26
 /** 底宽 / 峰高：大于 1 才是「山体」，小于 1 在轮廓边缘会读成一圈尖刺 */

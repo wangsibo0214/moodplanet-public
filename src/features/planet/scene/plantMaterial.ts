@@ -82,3 +82,16 @@ export function createPlantMaterial(
 
   return material
 }
+
+/**
+ * 岩石材质：不注入任何顶点位移。石头不该随风摆，也不该跟着花开度胀缩——
+ * 它是一份静态的 MeshStandardMaterial，颜色同样交给 instanceColor。
+ */
+export function createRockMaterial(): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({
+    color: '#FFFFFF',
+    roughness: 0.95,
+    metalness: 0,
+    flatShading: true,
+  })
+}

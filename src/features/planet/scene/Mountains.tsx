@@ -6,7 +6,7 @@ import { createRandom, oneOf } from '@/utils/random'
 import type { GroundField } from '../lib/groundField'
 import { writeSurfaceMatrix, type SurfacePoint } from '../lib/terrain'
 import { Instances } from './Instances'
-import { findMountainSites, type PeakSpec } from './mountainPlacement'
+import { findMountainSites, MOUNTAIN_COUNTS, type PeakSpec } from './mountainPlacement'
 import type { VegetationQuality } from './vegetationPlacement'
 
 /**
@@ -15,7 +15,6 @@ import type { VegetationQuality } from './vegetationPlacement'
  * 阴影因此是静态的，拖拽旋转时不会重算投影。
  */
 
-const COUNTS: Record<VegetationQuality, number> = { reduced: 5, normal: 9 }
 /* 山体比地表岩石群系更冷更灰：同一片紫色里才分得出「山」和「地」 */
 const ROCK_TINTS = ['#6A6784', '#5E5B78', '#7B7894'] as const
 const SNOW_TINTS = ['#EDF1FB', '#E2E9F8'] as const
@@ -67,7 +66,7 @@ interface Layout {
 }
 
 function buildLayout(ground: GroundField, quality: VegetationQuality): Layout {
-  const sites = findMountainSites(ground, COUNTS[quality])
+  const sites = findMountainSites(ground, MOUNTAIN_COUNTS[quality])
   const random = createRandom(0x51a7e5)
   const bodies: Layout['bodies'] = { matrices: [], colors: [] }
   const caps: Layout['caps'] = { matrices: [], colors: [] }

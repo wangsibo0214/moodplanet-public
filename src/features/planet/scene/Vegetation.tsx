@@ -5,12 +5,13 @@ import * as THREE from 'three'
 import type { GroundField } from '../lib/groundField'
 import { Instances } from './Instances'
 import type { EnvRuntime } from './moodEnvironment'
-import { createPlantMaterial, createPlantUniforms, type PlantUniforms } from './plantMaterial'
+import { createPlantMaterial, createPlantUniforms, createRockMaterial, type PlantUniforms } from './plantMaterial'
 import { buildLayout, type VegetationQuality } from './vegetationPlacement'
 
 interface Assets {
   geometries: Record<string, THREE.BufferGeometry>
   plant: THREE.MeshStandardMaterial
+  rock: THREE.MeshStandardMaterial
   bloom: THREE.MeshStandardMaterial
   dew: THREE.MeshStandardMaterial
   glow: THREE.MeshStandardMaterial
@@ -36,6 +37,8 @@ function createAssets(uniforms: PlantUniforms): Assets {
       mushroomCap: new THREE.SphereGeometry(0.011, 8, 5),
     },
     plant: createPlantMaterial(false, uniforms),
+    /* 石头用静态材质：不随风摆、不随花开度胀缩 */
+    rock: createRockMaterial(),
     bloom: createPlantMaterial(true, uniforms),
     /* 水珠：低粗糙度加一点自发光，才像挂着的水而不是灰点 */
     dew: new THREE.MeshStandardMaterial({
@@ -116,6 +119,7 @@ export function Vegetation({
     () => () => {
       for (const geometry of Object.values(assets.geometries)) geometry.dispose()
       assets.plant.dispose()
+      assets.rock.dispose()
       assets.bloom.dispose()
       assets.dew.dispose()
       assets.glow.dispose()
@@ -182,14 +186,14 @@ export function Vegetation({
       />
       <Instances
         geometry={geometries.rock}
-        material={assets.plant}
+        material={assets.rock}
         matrices={layout.rock[0].matrices}
         colors={layout.rock[0].colors}
         castShadow
       />
       <Instances
         geometry={geometries.rock}
-        material={assets.plant}
+        material={assets.rock}
         matrices={layout.rockBuddy[0].matrices}
         colors={layout.rockBuddy[0].colors}
         castShadow

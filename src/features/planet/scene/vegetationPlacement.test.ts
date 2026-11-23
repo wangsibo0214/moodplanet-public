@@ -91,3 +91,45 @@ describe('植被选址：树不再长进水里', () => {
     }
   })
 })
+
+describe('石头与树分开长', () => {
+  const ground = bakeGroundField(13)
+  const layout = buildLayout('normal', ground, true, true, true)
+  /* 树冠最大水平半径（0.048×1.45）+ 石块最大水平半径（0.042×1.25×1.9），
+     与选址里的避让常量同一推导：即使都抽到最大缩放也不该插到一起 */
+  const clearDot = Math.cos(0.048 * 1.45 + 0.042 * 1.25 * 1.9)
+
+  it('任意石心到任意树心的角距都大于树冠+石块半径之和', () => {
+    const treeDirs = layout.tree[0].matrices.map(dirOf)
+    expect(layout.rock[0].matrices.length).toBeGreaterThanOrEqual(12)
+    for (const matrix of layout.rock[0].matrices) {
+      const dir = dirOf(matrix)
+      for (const treeDir of treeDirs) {
+        expect(dir.dot(treeDir)).toBeLessThan(clearDot + 1e-9)
+      }
+    }
+  })
+
+  it('伴石也远离树冠', () => {
+    const treeDirs = layout.tree[0].matrices.map(dirOf)
+    expect(layout.rockBuddy[0].matrices.length).toBeGreaterThan(0)
+    for (const matrix of layout.rockBuddy[0].matrices) {
+      const dir = dirOf(matrix)
+      for (const treeDir of treeDirs) {
+        expect(dir.dot(treeDir)).toBeLessThan(clearDot + 1e-9)
+      }
+    }
+  })
+
+  it('低档位同样分离，石头不被筛秃', () => {
+    const reduced = buildLayout('reduced', ground, true, true, true)
+    const treeDirs = reduced.tree[0].matrices.map(dirOf)
+    expect(reduced.rock[0].matrices.length).toBeGreaterThanOrEqual(9)
+    for (const matrix of reduced.rock[0].matrices) {
+      const dir = dirOf(matrix)
+      for (const treeDir of treeDirs) {
+        expect(dir.dot(treeDir)).toBeLessThan(clearDot + 1e-9)
+      }
+    }
+  })
+})
