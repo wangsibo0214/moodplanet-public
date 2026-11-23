@@ -4,6 +4,8 @@ import { fbm3 } from './noise'
 
 export const PLANET_RADIUS = 1
 export const SEA_LEVEL = PLANET_RADIUS
+/** 海壳半径：与 PlanetBody 的海面球同一约定，选址的「干地」判断以它为基准。 */
+export const SEA_SURFACE = SEA_LEVEL * 1.004
 
 /** 地形最大起伏（相对半径）。这个量级下轮廓有明显立体感，又不会破坏「圆润可爱」。 */
 export const TERRAIN_AMPLITUDE = 0.095
@@ -14,12 +16,15 @@ const CONTINENT_FREQ = 1.3
 const LAND_BIAS = 0.07
 
 /* 生物群系色。three 在 ColorManagement 开启时会把 sRGB 转成线性工作空间，
-   顶点色需要线性值，所以统一用 THREE.Color 从 hex 构造。 */
-const COLOR_SEABED = new THREE.Color('#C2AE88')
-const COLOR_SAND = new THREE.Color('#EBD9A9')
-const COLOR_GRASS = new THREE.Color('#8CCB8C')
-const COLOR_FOREST = new THREE.Color('#4F9E67')
-const COLOR_ROCK = new THREE.Color('#948CB4')
+   顶点色需要线性值，所以统一用 THREE.Color 从 hex 构造。
+   海床按深度渐变：近岸青绿、深海蓝，透过半透明海面读得出浅滩。 */
+const COLOR_DEEP_SEABED = new THREE.Color('#2F6E96')
+const COLOR_SHALLOW_SEABED = new THREE.Color('#6FC7BE')
+const COLOR_SAND = new THREE.Color('#F0DCA8')
+const COLOR_GRASS = new THREE.Color('#7CC47F')
+const COLOR_FOREST = new THREE.Color('#3F8C58')
+const COLOR_ROCK = new THREE.Color('#8F86B8')
+const COLOR_SNOW = new THREE.Color('#EDF1FB')
 
 export interface SurfacePoint {
   /** 单位方向 */
@@ -59,17 +64,19 @@ export function biomeColor(
   target: THREE.Color,
 ): THREE.Color {
   if (elevation < -0.02) {
-    target.copy(COLOR_SEABED)
+    target.copy(COLOR_DEEP_SEABED).lerp(COLOR_SHALLOW_SEABED, clamp01((elevation + 0.4) / 0.38))
   } else if (elevation < 0.05) {
-    target.copy(COLOR_SEABED).lerp(COLOR_SAND, clamp01((elevation + 0.02) / 0.07))
+    target.copy(COLOR_SHALLOW_SEABED).lerp(COLOR_SAND, clamp01((elevation + 0.02) / 0.07))
   } else if (elevation < 0.15) {
     target.copy(COLOR_SAND).lerp(COLOR_GRASS, clamp01((elevation - 0.05) / 0.1))
   } else if (elevation < 0.34) {
     target.copy(COLOR_GRASS).lerp(COLOR_FOREST, clamp01((elevation - 0.15) / 0.19))
   } else if (elevation < 0.47) {
     target.copy(COLOR_FOREST).lerp(COLOR_ROCK, clamp01((elevation - 0.34) / 0.13))
-  } else {
+  } else if (elevation < 0.58) {
     target.copy(COLOR_ROCK)
+  } else {
+    target.copy(COLOR_ROCK).lerp(COLOR_SNOW, clamp01((elevation - 0.58) / 0.12))
   }
 
   /* 高频色斑：让同一片群系内部有明暗变化，避免大面积纯色带 */

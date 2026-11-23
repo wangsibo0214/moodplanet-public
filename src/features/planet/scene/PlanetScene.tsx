@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { OrbitControls } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -7,17 +7,20 @@ import type { ReactNode } from 'react'
 
 import { usePlanetStore } from '@/stores/usePlanetStore'
 
+import { bakeGroundField } from '../lib/groundField'
 import { AtmosphereGlow } from './AtmosphereGlow'
 import { CloudLayer } from './CloudLayer'
 import { Companion } from './Companion'
 import { Decorations } from './Decorations'
 import { EnvironmentLights } from './EnvironmentLights'
 import { MemoryStars } from './MemoryStars'
+import { Mountains } from './Mountains'
 import { PlanetBody } from './PlanetBody'
 import { Seaside } from './Seaside'
 import { SpaceParticles } from './SpaceParticles'
 import { StarPanelTracker } from './StarPanelTracker'
-import { Vegetation, type VegetationQuality } from './Vegetation'
+import { Vegetation } from './Vegetation'
+import type { VegetationQuality } from './vegetationPlacement'
 import {
   advanceEnvironment,
   createEnvironment,
@@ -200,6 +203,9 @@ export function PlanetScene({ calm, quality, detail }: PlanetSceneProps) {
     retargetEnvironment(env, mood)
   }, [env, mood])
 
+  /* 地表高度场只烘一次，植被与山脉共用：选址读的是渲染网格那层地皮 */
+  const ground = useMemo(() => bakeGroundField(detail), [detail])
+
   /* 用户一旦上手拖动或缩放就永久停掉开场转盘，不做「松手后恢复」这种抢控制权的行为 */
   const [userTookOver, setUserTookOver] = useState(false)
   const takeOver = useCallback(() => setUserTookOver(true), [])
@@ -212,8 +218,10 @@ export function PlanetScene({ calm, quality, detail }: PlanetSceneProps) {
       <IntroRig calm={calm}>
         <SpinGroup running={!calm && !userTookOver} onTakeOver={takeOver}>
           <PlanetBody detail={detail} env={env} calm={calm} shimmerSea={shimmerSea} />
+          <Mountains ground={ground} quality={quality} />
           <Vegetation
             quality={quality}
+            ground={ground}
             env={env}
             glowFlower={glowFlower}
             crystal={crystal}

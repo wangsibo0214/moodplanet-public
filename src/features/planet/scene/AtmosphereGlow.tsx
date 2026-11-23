@@ -4,7 +4,7 @@ import * as THREE from 'three'
 
 import type { EnvRuntime } from './moodEnvironment'
 
-const SPRITE_SCALE = 3.25
+const SPRITE_SCALE = 3.1
 
 /**
  * 环形大气辉光：中间镂空，只在星球轮廓外圈发光。
@@ -30,10 +30,10 @@ function useGlowTexture(): THREE.Texture {
         size / 2,
       )
       gradient.addColorStop(0, 'rgba(255,255,255,0)')
-      gradient.addColorStop(0.55, 'rgba(255,255,255,0)')
-      gradient.addColorStop(0.66, 'rgba(255,255,255,0.34)')
-      gradient.addColorStop(0.74, 'rgba(255,255,255,0.2)')
-      gradient.addColorStop(0.88, 'rgba(255,255,255,0.05)')
+      gradient.addColorStop(0.6, 'rgba(255,255,255,0)')
+      gradient.addColorStop(0.68, 'rgba(255,255,255,0.3)')
+      gradient.addColorStop(0.76, 'rgba(255,255,255,0.14)')
+      gradient.addColorStop(0.9, 'rgba(255,255,255,0.04)')
       gradient.addColorStop(1, 'rgba(255,255,255,0)')
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, size, size)
@@ -54,7 +54,7 @@ export function AtmosphereGlow({ env }: { env: EnvRuntime }) {
   useFrame(() => {
     if (!material.current) return
     material.current.color.copy(env.colors.tint)
-    material.current.opacity = 0.55 + env.values.glow * 0.35
+    material.current.opacity = 0.5 + env.values.glow * 0.4
   })
 
   return (

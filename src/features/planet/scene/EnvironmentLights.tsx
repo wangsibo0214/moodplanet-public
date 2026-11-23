@@ -16,12 +16,24 @@ import { pulseAmount, type EnvRuntime } from './moodEnvironment'
  */
 const FILL_DECAY = 1
 
+/**
+ * 美术基线倍率：环境光收一档、主光抬一档，明暗交界才读得出体积而不是平涂。
+ * 乘在统一出口上，各心情之间的相对平衡保持不变。
+ */
+const AMBIENT_SCALE = 0.5
+const HEMI_SCALE = 0.55
+const SUN_SCALE = 1.6
+const RIM_BASE = 1.3
+const RIM_WHITE = new THREE.Color('#FFFFFF')
+
 export function EnvironmentLights({ env }: { env: EnvRuntime }) {
   const ambient = useRef<THREE.AmbientLight>(null)
   const hemi = useRef<THREE.HemisphereLight>(null)
   const sun = useRef<THREE.DirectionalLight>(null)
   const fill = useRef<THREE.PointLight>(null)
   const warm = useRef<THREE.PointLight>(null)
+  const rim = useRef<THREE.DirectionalLight>(null)
+  const rimColor = useRef(new THREE.Color())
 
   /* R3F 只会赋值 shadow-camera-* ，不会重算投影矩阵，正交视锥必须手动更新一次 */
   useEffect(() => {
@@ -44,16 +56,16 @@ export function EnvironmentLights({ env }: { env: EnvRuntime }) {
 
     if (ambient.current) {
       ambient.current.color.copy(env.colors.ambient)
-      ambient.current.intensity = v.ambientIntensity * pulse
+      ambient.current.intensity = v.ambientIntensity * pulse * AMBIENT_SCALE
     }
     if (hemi.current) {
       hemi.current.color.copy(env.colors.hemiSky)
       hemi.current.groundColor.copy(env.colors.hemiGround)
-      hemi.current.intensity = v.hemiIntensity * pulse
+      hemi.current.intensity = v.hemiIntensity * pulse * HEMI_SCALE
     }
     if (sun.current) {
       sun.current.color.copy(env.colors.sun)
-      sun.current.intensity = v.sunIntensity
+      sun.current.intensity = v.sunIntensity * SUN_SCALE
     }
     if (fill.current) {
       fill.current.color.copy(env.colors.fill)
@@ -62,6 +74,12 @@ export function EnvironmentLights({ env }: { env: EnvRuntime }) {
     if (warm.current) {
       /* 难过与疲惫时逐渐浮起的那层暖光 */
       warm.current.intensity = v.warmGlow * 3.5 * pulse
+    }
+    if (rim.current) {
+      /* 冷色轮廓光：从背后勾出星球与山脊的边缘，颜色跟着补光走才不割裂 */
+      rimColor.current.copy(env.colors.fill).lerp(RIM_WHITE, 0.35)
+      rim.current.color.copy(rimColor.current)
+      rim.current.intensity = RIM_BASE + v.glow * 0.3
     }
 
     state.gl.toneMappingExposure = v.exposure
@@ -91,6 +109,9 @@ export function EnvironmentLights({ env }: { env: EnvRuntime }) {
         color="#6FB6F0"
         decay={FILL_DECAY}
       />
+
+      {/* 轮廓光：不投影，只勾边；拖拽旋转时阴影不会跟着重算 */}
+      <directionalLight ref={rim} position={[-4.6, 2.4, -4.6]} intensity={0.9} color="#8FB4FF" />
 
       {/* 温暖微光：难过时从星球正面缓缓亮起，疲惫时留一盏夜灯 */}
       <pointLight

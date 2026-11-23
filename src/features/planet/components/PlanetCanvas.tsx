@@ -1,7 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 
 import { PlanetScene } from '../scene/PlanetScene'
-import type { VegetationQuality } from '../scene/Vegetation'
+import type { VegetationQuality } from '../scene/vegetationPlacement'
 
 interface PlanetCanvasProps {
   calm: boolean
