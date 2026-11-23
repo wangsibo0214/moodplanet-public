@@ -24,7 +24,9 @@ pnpm dev      # → http://localhost:5173
 
 **2026-11-09 ~ 11-15 这一周走特殊安排**：原开发者不参与，`master` 冻结，@reterhog354-star 在 `week1` 集成分支上自主推进、自己 approve 合入 `week1`，周末再开 `week1 → master` 总 PR。详见 `AGENTS.md` 第 9.3 节，含本周放开的两条红线与继续死守的清单。
 
-`pnpm dev` 起来后应用是空的，星球上什么都没有——数据只存浏览器本地，属正常，不是 bug。想看有数据的样子：F12 → Console，把 `seed/example-data.js` 整个文件内容粘贴进去回车，页面会自动刷新出 12 条示例记录、8 项装饰全解锁、1 个待开启胶囊。示例数据是虚构的，会覆盖当前浏览器里已有的 `moodplanet:*` 数据。
+分工说明：仓库主体（项目骨架、星球渲染与成长系统、四页检索分页、情绪档案与时间胶囊、验收基线）由 @wangsibo0214 完成；@reterhog354-star（早期账号 @ZSQ114coder）独立交付了记忆星交互与锚定跟随弹窗、伙伴径向菜单、面板摆放规则、`actions` 规则层及各自的测试。上面那段是 11-09 ~ 11-15 的临时安排，**已于 11-15 到期失效**，保留仅作过程存档。
+
+`pnpm dev` 起来后应用是空的，星球上什么都没有——数据只存浏览器本地，属正常，不是 bug。想看有数据的样子：F12 → Console，把 `seed/example-data.js` 整个文件内容粘贴进去回车，页面会自动刷新出 12 条示例记录、解锁 12 项成长内容里的 9 项（4 个伙伴动作全开，地表/装饰开 5 项；灯塔 / 栈桥小船 / 粼粼海面要累计保存 15 / 18 / 20 条，示例数据到不了）、1 个待开启胶囊。示例数据是虚构的，会覆盖该端口下已有的 `moodplanet:*` 数据，别在存着真实记录的端口上跑。
 
 ## 常用命令
 
@@ -43,7 +45,7 @@ pnpm dev      # → http://localhost:5173
 | 领域 | 选择 | 说明 |
 | --- | --- | --- |
 | 框架 | React 19.3 | |
-| 语言 | TypeScript 7.0 | `strict` 全开，路径别名 `@/*` → `src/*` |
+| 语言 | TypeScript 7.0 | `strict` + `noUnusedLocals/Parameters` + `erasableSyntaxOnly` + `noFallthroughCasesInSwitch`（见 `tsconfig.app.json`；未开 `noUncheckedIndexedAccess`，`tsconfig.node.json` 不含严格开关），路径别名 `@/*` → `src/*` |
 | 构建 | Vite 8.3 | 路由级懒加载，每个页面独立分包 |
 | 样式 | Tailwind CSS 4.3 | CSS-first 配置，设计令牌集中在 `src/styles/index.css` 的 `@theme` |
 | 路由 | react-router 7 | `BrowserRouter` + 嵌套布局路由 + `lazy` |
@@ -113,7 +115,7 @@ src/
 - 正文与次要文本对比度 ≥ 6:1，全部通过 WCAG AA
 - 全局 `:focus-visible` 焦点环
 - 触控目标 ≥ 44px（导航项、按钮 md/lg、开关命中区）
-- 全局 `prefers-reduced-motion` 降级，并可在设置页手动开启「降低动效」
+- 全局 `prefers-reduced-motion` 降级（只跟随系统设置，设置页没有单独开关）
 - 图标一律 `aria-hidden`，纯图标控件必须带 `aria-label`
 
 ## 路由

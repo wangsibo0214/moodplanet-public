@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# 本地环境变量，以及用户从设置页导出的真实数据备份（含真实日记，绝不进仓库）
+.env*
+moodplanet-backup-*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

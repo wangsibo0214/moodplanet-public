@@ -35,15 +35,15 @@
 | `moodplanet:capsules` | `{version, savedAt, capsules[]}` | `status` 读盘时被忽略，按 `unlockAt` 与当前时钟重算 |
 | `moodplanet:settings` | zustand persist 的 `{state, version:0}` | 不是上面那种信封结构 |
 
-**应用只有导出，没有导入入口**（`src/services/dataTransfer.ts` 仅 `buildExportPayload` / `downloadExport` / `clearAllData`）。想看有数据的界面，用 `seed/example-data.js`：`pnpm dev` 打开页面 → F12 Console 粘贴整个文件 → 回车。
+**应用只有导出，没有导入入口**（`src/services/dataTransfer.ts` 导出 `buildExportPayload` / `exportFilename` / `downloadExport` / `clearAllData`，没有 restore 一类函数）。想看有数据的界面，用 `seed/example-data.js`：`pnpm dev` 打开页面 → F12 Console 粘贴整个文件 → 回车。**它会覆盖该端口下已有的全部 `moodplanet:*` 数据，别在有真实记录的端口上跑。**
 
 clone 后什么都不做的话应用是空的，这属正常，不是 bug。
 
-## 5. 当前基线读数（改动后用同一命令复测）
+## 5. 当前基线读数（改动后用同一命令复测，下列为 2026-11-23 复测）
 
 ```bash
-pnpm test    # Test Files 21 passed / Tests 224 passed
-pnpm build   # three 743.00 kB (gzip 187.59) / r3f 206.70 (65.14) / index 316.36 (103.69) / PlanetPage 34.92 (11.07)
+pnpm test    # Test Files 39 passed / Tests 362 passed（1.93s）
+pnpm build   # three 743.05 kB (gzip 187.62) / r3f 206.71 (65.13) / index 317.79 (104.27) / PlanetPage 35.42 (11.20)
 pnpm lint    # 0 warnings 0 errors
 ```
 
@@ -83,7 +83,7 @@ pnpm lint    # 0 warnings 0 errors
 
 用来判断一次改动有没有把别的状态带偏（同一天重复加载应当逐位一致）：
 
-- `sad`：灯色 `fab46a`，emI 1.0425，scaleY 0.985
+- `sad`：灯色 `#6FB6F0`，emI 1.0425，scaleY 0.985（灯色按 `mood.config.ts` 校正；emI / scaleY 取自 11-19 探针，本次未复测）
 - `anxious`：emI 0.637–1.037（呼吸起伏，A1）
 - `tired`：emI 0.27，scaleY 0.94，rotX 0.3
 - 非点亮期间灯球 scale 恒为 1.0000
