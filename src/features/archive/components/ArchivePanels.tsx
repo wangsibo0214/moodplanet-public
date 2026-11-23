@@ -59,35 +59,45 @@ export function StatCards({ stats, starCount }: { stats: ArchiveStats; starCount
 }
 
 export function MoodDistribution({ moodCounts }: { moodCounts: MoodCount[] }) {
-  const max = Math.max(...moodCounts.map((entry) => entry.count), 1)
+  /* 一条 100% 堆叠色带：每段宽度就是它占全部记录的比例，六段合计恒等于整条，不设可见下限。 */
+  const total = moodCounts.reduce((sum, entry) => sum + entry.count, 0)
+  const share = (count: number) => (total === 0 ? 0 : (count / total) * 100)
+  const percent = (count: number) =>
+    count === 0 ? '0%' : share(count) < 1 ? '不足 1%' : `${Math.round(share(count))}%`
   return (
-    <ul className="flex flex-col gap-2.5">
-      {moodCounts.map(({ mood, count }) => {
-        const meta = MOOD_MAP[mood]
-        return (
-          <li key={mood} className="flex items-center gap-3">
-            <span className="flex w-12 shrink-0 items-center gap-1.5 text-sm text-ink-100">
+    <div className="flex flex-col gap-4">
+      <div aria-hidden className="flex h-3 w-full overflow-hidden rounded-full bg-white/6">
+        {moodCounts.map(({ mood, count }) => (
+          <span
+            key={mood}
+            className="block h-full transition-[width] duration-300 ease-soft"
+            style={{
+              width: `${share(count)}%`,
+              backgroundColor: MOOD_MAP[mood].hex,
+              boxShadow: count > 0 ? 'inset -1px 0 0 rgb(0 0 0 / 0.45)' : undefined,
+            }}
+          />
+        ))}
+      </div>
+      <ul className="grid grid-cols-2 gap-x-4 gap-y-2">
+        {moodCounts.map(({ mood, count }) => {
+          const meta = MOOD_MAP[mood]
+          return (
+            <li key={mood} className="flex min-w-0 items-center gap-2 text-sm">
               <span
                 aria-hidden
-                className="size-2 rounded-full"
+                className="size-2 shrink-0 rounded-full"
                 style={{ backgroundColor: meta.hex }}
               />
-              {meta.label}
-            </span>
-            <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/6">
-              <span
-                className="block h-full rounded-full transition-[width] duration-300 ease-soft"
-                style={{
-                  width: count === 0 ? '0%' : `${Math.max(6, (count / max) * 100)}%`,
-                  backgroundColor: meta.hex,
-                }}
-              />
-            </span>
-            <span className="w-10 shrink-0 text-right text-xs text-ink-500">{count} 次</span>
-          </li>
-        )
-      })}
-    </ul>
+              <span className="truncate text-ink-100">{meta.label}</span>
+              <span className="ml-auto shrink-0 text-xs text-ink-500">
+                {count} 次 · {percent(count)}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
   )
 }
 

@@ -106,7 +106,7 @@ export default function EmotionArchivePage() {
             <Card>
               <CardHeader>
                 <CardTitle>心情分布</CardTitle>
-                <CardDescription>六种心情各出现过多少次，全部来自本机保存的记录。</CardDescription>
+                <CardDescription>整条色带代表全部记录，六段按各心情占比铺色；次数与占比见下方图例。</CardDescription>
               </CardHeader>
               <div className="mt-5">
                 <MoodDistribution moodCounts={stats.moodCounts} />
