@@ -4,15 +4,17 @@
 
 > 阶段 1–6 已完成：3D 星球场景、心情记录、记忆星、时光胶囊、情绪档案、设置页均已接入。
 
+本项目采用 [MIT 许可](./LICENSE)。
+
 ## 接手第一步
 
-仓库是**私有**的，先在 <https://github.com/settings/invitations> 接受协作邀请，否则 clone 会失败。
+本仓库是**公开投稿镜像**，无需邀请，可直接 clone：<https://github.com/wangsibo0214/moodplanet-public>。私有协作仓仅对受邀成员开放，协作流程见 [`AGENTS.md`](./AGENTS.md) 第 9.1 节。
 
 环境要求：Node `^20.19.0 || >=22.12.0`（Vite 8.3 的硬性要求），以及 **pnpm**——依赖必须用 `pnpm install` 按仓库根的 `pnpm-lock.yaml` 安装，换 npm/yarn 会绕过锁定解析，构建结果不可比。
 
 ```bash
-git clone https://github.com/wangsibo0214/moodplanet.git
-cd moodplanet
+git clone https://github.com/wangsibo0214/moodplanet-public.git
+cd moodplanet-public
 pnpm install
 pnpm test     # 必须全绿；当前基线的文件数与用例数以 AGENTS.md 第 5 节为准
 pnpm dev      # → http://localhost:5173
@@ -20,7 +22,7 @@ pnpm dev      # → http://localhost:5173
 
 **接着读 [`AGENTS.md`](./AGENTS.md)**，红线、验收方法、基线读数、已知偏差全在那份文件里，本 README 不复述。
 
-两人协作：**不要直推 master**。开 `feat/<卡片名>` 分支 → 自跑验收 → 推分支开 PR → 对方 approve → @wangsibo0214 用 Squash and merge 合入。完整流程见 `AGENTS.md` 第 9.1 节（Free 计划的私有库没有服务端分支保护，这条纯靠自觉）。
+私有协作（仅受邀成员）：**不要直推 master**。开 `feat/<卡片名>` 分支 → 自跑验收 → 推分支开 PR → 对方 approve → @wangsibo0214 用 Squash and merge 合入。完整流程见 `AGENTS.md` 第 9.1 节（Free 计划的私有库没有服务端分支保护，这条纯靠自觉）。
 
 **2026-11-09 ~ 11-15 这一周走特殊安排**：原开发者不参与，`master` 冻结，@reterhog354-star 在 `week1` 集成分支上自主推进、自己 approve 合入 `week1`，周末再开 `week1 → master` 总 PR。详见 `AGENTS.md` 第 9.3 节，含本周放开的两条红线与继续死守的清单。
 
@@ -131,9 +133,5 @@ src/
 | `*` | 404 |
 
 使用 History 路由。部署到静态服务器时需要把所有路径重写到 `index.html`，否则直接访问深层链接会 404。
-
-## 已知待办
-
-- `PlanetSnapshot.tsx` 主页「待开启胶囊」格写死为 `0` / 「时光胶囊还没启用」，未接胶囊 store（胶囊页本身正常）。
 
 上面「目录结构」是早期草图，只列了当时的文件；现在 `features/` 下每个域、`services/` 四个仓储、`stores/` 四个 store 都已展开，以仓库实际文件为准。

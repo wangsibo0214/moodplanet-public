@@ -39,11 +39,11 @@
 
 clone 后什么都不做的话应用是空的，这属正常，不是 bug。
 
-## 5. 当前基线读数（改动后用同一命令复测，下列为 2026-11-23 复测）
+## 5. 当前基线读数（改动后用同一命令复测，下列为 2026-11-24 复测）
 
 ```bash
-pnpm test    # Test Files 39 passed / Tests 362 passed（1.93s）
-pnpm build   # three 743.05 kB (gzip 187.62) / r3f 206.71 (65.13) / index 317.79 (104.27) / PlanetPage 35.42 (11.20)
+pnpm test    # Test Files 43 passed / Tests 377 passed（1.84s）
+pnpm build   # three 743.05 kB (gzip 187.62) / r3f 206.71 (65.13) / index 317.95 (104.31) / PlanetPage 35.89 (11.38)
 pnpm lint    # 0 warnings 0 errors
 ```
 
@@ -57,7 +57,7 @@ pnpm lint    # 0 warnings 0 errors
 
 1. `pnpm build` 报 *Some chunks are larger than 500 kB*：three 本体固有体积，已用 rolldown `codeSplitting.groups` 拆出 three 与 r3f，警告仍在。拆包代价约 +5 kB gzip，换来 three 长期缓存稳定。
 2. planet 每次 hydrate 会重写一次 envelope，实际只有 `savedAt` 变化（见 `usePlanetStore.ts` hydrate 末尾的 `save`）。
-3. `PlanetSnapshot.tsx` 的「待开启胶囊」格是写死的 `value: '0'` / hint「时光胶囊还没启用」，**没有读胶囊 store**。胶囊页本身正常。这条是交接时发现既存问题，尚未修。
+3. **已修复（2026-11-24）**：`PlanetSnapshot.tsx` 的「待开启胶囊」不再写死为 `0`，已接胶囊 store；首页挂载时会触发 hydrate，并按真实时钟统计 `ready`（到期待开启）。`sealed` 封存中与 `opened` 已开启均不计。本条保留为修复记录，不再是当前偏差。
 
 新增偏差就往下加。
 
@@ -93,7 +93,9 @@ pnpm lint    # 0 warnings 0 errors
 
 ### 9.1 Git 流程
 
-仓库是 Free 计划下的私有库，GitHub 不给分支保护 / rulesets（API 返回 403），所以下面这套**没有任何服务端强制，纯靠自觉**。谁直推了 master 都拦不住，只能事后回滚。
+公开投稿镜像是 <https://github.com/wangsibo0214/moodplanet-public>，无需邀请，任何人可 clone。私有协作仓仅对受邀成员开放，地址由仓库成员另行提供；以下 Git 流程只在私有协作仓执行。
+
+私有协作仓是 Free 计划下的私有库，GitHub 不给分支保护 / rulesets（API 返回 403），所以下面这套**没有任何服务端强制，纯靠自觉**。谁直推了 master 都拦不住，只能事后回滚。
 
 - **master 只进 PR**。任何人不得直推 master，不得 force push，不得删 master。
 - 开工前先 `git checkout master && git pull`，再开分支：`git switch -c feat/<卡片名>`（修 bug 用 `fix/<卡片名>`）。一张卡一个分支，不要在 master 上写代码。

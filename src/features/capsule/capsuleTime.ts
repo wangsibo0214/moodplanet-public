@@ -28,6 +28,14 @@ export function capsuleStatus(
   return now.getTime() >= unlock.getTime() ? 'ready' : 'sealed'
 }
 
+/** 「待开启」只数真实时钟下已到期、尚未开启的胶囊；封存中不计。 */
+export function countReadyCapsules(
+  capsules: readonly Pick<TimeCapsule, 'unlockAt' | 'openedAt'>[],
+  now: Date,
+): number {
+  return capsules.filter((capsule) => capsuleStatus(capsule, now) === 'ready').length
+}
+
 export function remainingMs(capsule: Pick<TimeCapsule, 'unlockAt'>, now: Date): number {
   const unlock = toDate(capsule.unlockAt)
   return unlock ? unlock.getTime() - now.getTime() : 0

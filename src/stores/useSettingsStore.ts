@@ -47,6 +47,13 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'settings',
       storage: createJSONStorage(() => appStorage),
+      partialize: (state) => ({
+        meteorShower: state.meteorShower,
+        starDensity: state.starDensity,
+        navCollapsed: state.navCollapsed,
+        soundEnabled: state.soundEnabled,
+        soundVolume: state.soundVolume,
+      }),
     },
   ),
 )

@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Card } from '@/components/ui'
+import { countReadyCapsules } from '@/features/capsule/capsuleTime'
 import { MOODS, MOOD_MAP } from '@/features/mood/mood.config'
+import { useCapsuleStore } from '@/stores/useCapsuleStore'
 import { useMoodStore } from '@/stores/useMoodStore'
 import { usePlanetStore } from '@/stores/usePlanetStore'
 import type { MoodKey } from '@/types/mood'
@@ -40,8 +42,14 @@ function dominantMood(keys: readonly MoodKey[]): MoodKey | null {
 export function PlanetSnapshot() {
   const records = useMoodStore((state) => state.records)
   const stars = usePlanetStore((state) => state.stars)
+  const capsules = useCapsuleStore((state) => state.capsules)
+  const hydrateCapsules = useCapsuleStore((state) => state.hydrate)
   /* 「近七天」的起点固定在挂载时刻，和 HUD 的问候语用同一套口径 */
   const [now] = useState(() => Date.now())
+
+  useEffect(() => {
+    void hydrateCapsules()
+  }, [hydrateCapsules])
 
   const items = useMemo<SnapshotItem[]>(() => {
     const week = records.filter((record) => {
@@ -49,6 +57,7 @@ export function PlanetSnapshot() {
       return created !== null && now - created.getTime() <= WEEK_MS
     })
     const dominant = dominantMood(records.map((record) => record.mood))
+    const readyCapsules = countReadyCapsules(capsules, new Date(now))
 
     return [
       {
@@ -74,12 +83,12 @@ export function PlanetSnapshot() {
       },
       {
         label: '待开启胶囊',
-        value: '0',
-        hint: '时光胶囊还没启用',
+        value: readyCapsules === 0 ? '—' : String(readyCapsules),
+        hint: readyCapsules === 0 ? '暂无到期待开启的胶囊' : `共 ${readyCapsules} 颗已到开启时间`,
         accentClass: 'text-blush-400',
       },
     ]
-  }, [records, stars.length, now])
+  }, [records, stars.length, capsules, now])
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

@@ -6,11 +6,12 @@ import { useSettingsStore } from '@/stores/useSettingsStore'
 
 /**
  * 本机数据的导出与清除。
- * 导出只读 localStorage，不经过 store，保证拿到的就是落盘原文；
+ * 导出只读 localStorage，不经过 store，保证拿到的就是落盘原文；损坏备份键也按原文带出。
  * 清除先复位内存里的四个 store，再删 key，避免复位动作又把空信封写回去。
  */
 
 const EXPORT_KEYS = ['records', 'planet', 'capsules', 'settings'] as const
+const CORRUPT_PREFIXES = ['records', 'planet', 'capsules'].map((key) => `${STORAGE_PREFIX}${key}:corrupt-`)
 
 export type ExportKey = (typeof EXPORT_KEYS)[number]
 
@@ -19,6 +20,7 @@ export interface ExportPayload {
   schemaVersion: 1
   exportedAt: string
   data: Record<ExportKey, unknown>
+  corrupt: Record<string, string>
 }
 
 function readKey(key: ExportKey): unknown {
@@ -37,6 +39,21 @@ function readKey(key: ExportKey): unknown {
   }
 }
 
+function readCorruptBackups(): Record<string, string> {
+  const backups: Record<string, string> = {}
+  try {
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index)
+      if (!key || !CORRUPT_PREFIXES.some((prefix) => key.startsWith(prefix))) continue
+      const raw = window.localStorage.getItem(key)
+      if (raw !== null) backups[key] = raw
+    }
+  } catch {
+    /* 存储不可读时不阻断其余四键的导出 */
+  }
+  return backups
+}
+
 export function buildExportPayload(): ExportPayload {
   const data = {} as Record<ExportKey, unknown>
   for (const key of EXPORT_KEYS) data[key] = readKey(key)
@@ -45,6 +62,7 @@ export function buildExportPayload(): ExportPayload {
     schemaVersion: 1,
     exportedAt: new Date().toISOString(),
     data,
+    corrupt: readCorruptBackups(),
   }
 }
 

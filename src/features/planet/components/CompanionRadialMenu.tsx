@@ -16,6 +16,7 @@ import { usePlanetStore } from '@/stores/usePlanetStore'
 import type { CompanionActionKind } from '@/types/mood'
 import { cn } from '@/utils/cn'
 
+import { startAnchorFollow } from '../lib/anchorFollow'
 import { menuActionLock } from '../lib/menuAccess'
 import { companionAnchor } from '../scene/companionAnchor'
 
@@ -134,26 +135,27 @@ export function CompanionRadialMenu() {
     const el = ringRef.current
     const stage = el?.offsetParent as HTMLElement | null
     if (!el || !stage) return
-    const place = () => {
-      if (!companionAnchor.onScreen) {
-        close()
-        return
-      }
-      /* 钳到舞台内：靠近边缘时整个环往里挪，按钮永远不出可视区。上下边距非对称（顶部无标签）。 */
-      const bodyY = (companionAnchor.y + companionAnchor.bottomY) / 2
-      const mx = Math.min(MARGIN_X, stage.clientWidth / 2)
-      const mTop = Math.min(MARGIN_TOP, stage.clientHeight / 2)
-      const mBottom = Math.min(MARGIN_BOTTOM, stage.clientHeight / 2)
-      const x = Math.min(Math.max(companionAnchor.x, mx), stage.clientWidth - mx)
-      const y = Math.min(Math.max(bodyY, mTop), stage.clientHeight - mBottom)
-      el.style.transform = `translate(${x}px, ${y}px)`
-      raf = window.requestAnimationFrame(place)
-    }
-    let raf = 0
-    /* 先同步摆一次：首帧就不会闪现在舞台左上角 */
-    place()
-    return () => window.cancelAnimationFrame(raf)
-  }, [visible, close])
+    return startAnchorFollow({
+      calm,
+      place: () => {
+        if (!companionAnchor.onScreen) {
+          close()
+          return false
+        }
+        /* 钳到舞台内：靠近边缘时整个环往里挪，按钮永远不出可视区。上下边距非对称（顶部无标签）。 */
+        const bodyY = (companionAnchor.y + companionAnchor.bottomY) / 2
+        const mx = Math.min(MARGIN_X, stage.clientWidth / 2)
+        const mTop = Math.min(MARGIN_TOP, stage.clientHeight / 2)
+        const mBottom = Math.min(MARGIN_BOTTOM, stage.clientHeight / 2)
+        const x = Math.min(Math.max(companionAnchor.x, mx), stage.clientWidth - mx)
+        const y = Math.min(Math.max(bodyY, mTop), stage.clientHeight - mBottom)
+        el.style.transform = `translate(${x}px, ${y}px)`
+      },
+      firstFrame: 'sync',
+      request: (callback) => window.requestAnimationFrame(callback),
+      cancel: (id) => window.cancelAnimationFrame(id),
+    })
+  }, [visible, close, calm])
 
   /* 点菜单之外的任何地方收起；环内的点击交给按钮自己 */
   useEffect(() => {

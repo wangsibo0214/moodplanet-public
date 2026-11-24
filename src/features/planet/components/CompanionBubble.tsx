@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 
+import { useMediaQuery } from '@/hooks'
 import { usePlanetStore } from '@/stores/usePlanetStore'
 
+import { startAnchorFollow } from '../lib/anchorFollow'
 import { companionAnchor } from '../scene/companionAnchor'
 
 const DISMISS_AFTER = 5200
@@ -11,6 +13,7 @@ const DISMISS_AFTER = 5200
 export function CompanionBubble() {
   const line = usePlanetStore((state) => state.companionLine)
   const dismiss = usePlanetStore((state) => state.dismissCompanion)
+  const calm = useMediaQuery('(prefers-reduced-motion: reduce)')
   const placeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,30 +41,32 @@ export function CompanionBubble() {
         stageRect.top + top + height > hudRect.top
       )
     }
-    const raf = { id: 0 }
-    const place = () => {
-      const half = el.offsetWidth / 2
-      const height = el.offsetHeight
-      const x = Math.min(Math.max(companionAnchor.x, half + 8), stage.clientWidth - half - 8)
-      const above = companionAnchor.y - height - 14
-      /* 从脚底起算的下方位：翻下去也不会盖住角色本身 */
-      const below = companionAnchor.bottomY + 12
-      const preferred = above < 8 ? below : above
-      const top = hitsHud(x - half, preferred, half * 2, height) ? below : preferred
-      if (companionAnchor.onScreen && !hitsHud(x - half, top, half * 2, height)) {
-        el.style.left = `${x}px`
-        el.style.top = `${top}px`
-        el.style.bottom = 'auto'
-      } else {
-        el.style.left = '50%'
-        el.style.top = 'auto'
-        el.style.bottom = window.innerWidth >= 1024 ? '96px' : '16px'
-      }
-      raf.id = window.requestAnimationFrame(place)
-    }
-    raf.id = window.requestAnimationFrame(place)
-    return () => window.cancelAnimationFrame(raf.id)
-  }, [line])
+    return startAnchorFollow({
+      calm,
+      place: () => {
+        const half = el.offsetWidth / 2
+        const height = el.offsetHeight
+        const x = Math.min(Math.max(companionAnchor.x, half + 8), stage.clientWidth - half - 8)
+        const above = companionAnchor.y - height - 14
+        /* 从脚底起算的下方位：翻下去也不会盖住角色本身 */
+        const below = companionAnchor.bottomY + 12
+        const preferred = above < 8 ? below : above
+        const top = hitsHud(x - half, preferred, half * 2, height) ? below : preferred
+        if (companionAnchor.onScreen && !hitsHud(x - half, top, half * 2, height)) {
+          el.style.left = `${x}px`
+          el.style.top = `${top}px`
+          el.style.bottom = 'auto'
+        } else {
+          el.style.left = '50%'
+          el.style.top = 'auto'
+          el.style.bottom = window.innerWidth >= 1024 ? '96px' : '16px'
+        }
+      },
+      firstFrame: 'async',
+      request: (callback) => window.requestAnimationFrame(callback),
+      cancel: (id) => window.cancelAnimationFrame(id),
+    })
+  }, [line, calm])
 
   return (
     /* 容器常驻，aria-live 才能在内容插入时播报 */
